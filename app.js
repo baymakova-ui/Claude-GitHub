@@ -806,6 +806,430 @@ function highlightOwnBuilding() {
 }
 
 // =====================================================================
-// END OF PART 2a — say "Continue" for Part 2b:
-// characters from photos, drone, idle animations, focus camera
+// PART 2b — CHARACTER AVATARS, DRONE, FOCUS CAMERA, IDLE ANIMATIONS
+// =====================================================================
+
+// ---------- PHOTO → AVATAR TEXTURE ---------------------------------
+// Strategy: take the uploaded photo, auto-crop to a square around the centre
+// (heuristically the face), composite onto a stylized cartoon-head canvas
+// with a soft gold rim, then use that texture as the FRONT face of the
+// avatar's head. The back/sides get a procedural skin-tone fallback.
+function photoToHeadTexture(photoDataUrl, opts = {}) {
+  return new Promise((resolve, reject) => {
+    if (!photoDataUrl) {
+      resolve(makeFallbackHeadTexture(opts.color || '#f7d774'));
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const size = 512;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+
+      // Background — gold radial halo
+      const halo = ctx.createRadialGradient(size/2, size/2, 60, size/2, size/2, size/2);
+      halo.addColorStop(0, '#3a2c0a');
+      halo.addColorStop(1, '#0a0a0a');
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, size, size);
+
+      // Auto-crop: take the largest centered square of the source photo,
+      // weighted slightly toward the top (where faces usually are)
+      const sw = img.naturalWidth, sh = img.naturalHeight;
+      const side = Math.min(sw, sh);
+      const sx = (sw - side) / 2;
+      const sy = Math.max(0, (sh - side) / 2 - side * 0.08); // bias upward
+
+      // Circular clip for a clean cartoon-head look
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2 - 24, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, sx, sy, side, side, 12, 12, size - 24, size - 24);
+
+      // Subtle gold tint overlay so it harmonises with theme
+      ctx.fillStyle = 'rgba(247, 215, 116, 0.08)';
+      ctx.fillRect(0, 0, size, size);
+      ctx.restore();
+
+      // Gold rim
+      const rim = ctx.createLinearGradient(0, 0, size, size);
+      rim.addColorStop(0, '#f7d774');
+      rim.addColorStop(1, '#b8860b');
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2 - 18, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      resolve(tex);
+    };
+    img.onerror = () => resolve(makeFallbackHeadTexture(opts.color || '#f7d774'));
+    img.src = photoDataUrl;
+  });
+}
+
+function makeFallbackHeadTexture(color) {
+  const size = 256;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  // Skin-tone disc with gold rim and stylized smile
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, size, size);
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size/2 - 12, 0, Math.PI * 2);
+  ctx.fillStyle = '#e7c89a';
+  ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath(); ctx.arc(size*0.38, size*0.45, 10, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(size*0.62, size*0.45, 10, 0, Math.PI*2); ctx.fill();
+  // Smile
+  ctx.strokeStyle = '#3a1f0a'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(size/2, size*0.58, 28, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+  // Gold rim
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, '#f7d774'); grad.addColorStop(1, '#b8860b');
+  ctx.strokeStyle = grad; ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.arc(size/2, size/2, size/2 - 8, 0, Math.PI * 2); ctx.stroke();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// ---------- AVATAR (3D CARTOON BODY) -------------------------------
+async function buildCharacter(emp) {
+  const group = new THREE.Group();
+  group.userData.empId = emp.id;
+  group.userData.kind = 'character';
+
+  // Body (rounded torso) — color tinted by employee colour
+  const bodyColor = new THREE.Color(emp.color || '#d4af37');
+  const body = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.32, 0.7, 6, 14),
+    new THREE.MeshStandardMaterial({
+      color: bodyColor.clone().multiplyScalar(0.6),
+      roughness: 0.55, metalness: 0.25
+    })
+  );
+  body.position.y = 0.65;
+  body.castShadow = true;
+  group.add(body);
+
+  // Suit lapel — gold V
+  const lapel = new THREE.Mesh(
+    new THREE.ConeGeometry(0.22, 0.45, 3),
+    goldMat()
+  );
+  lapel.rotation.x = Math.PI;
+  lapel.rotation.y = Math.PI / 6;
+  lapel.position.set(0, 0.75, 0.32);
+  group.add(lapel);
+
+  // Head — sphere with photo texture on the front
+  const headTex = await photoToHeadTexture(emp.photo, { color: emp.color });
+  const headMat = new THREE.MeshStandardMaterial({
+    map: headTex,
+    color: 0xffffff,
+    roughness: 0.55,
+    metalness: 0.05
+  });
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.34, 32, 24), headMat);
+  head.position.y = 1.35;
+  head.castShadow = true;
+  // Rotate so the textured face points forward (+Z)
+  head.rotation.y = 0;
+  group.add(head);
+
+  // Gold "halo" / hat ring above head — adds the cartoon flair
+  const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(0.32, 0.04, 10, 24),
+    goldMat()
+  );
+  halo.position.y = 1.65;
+  halo.rotation.x = Math.PI / 2;
+  group.add(halo);
+
+  // Arms
+  const armMat = new THREE.MeshStandardMaterial({
+    color: bodyColor.clone().multiplyScalar(0.55), roughness: 0.6
+  });
+  const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.55, 4, 8), armMat);
+  armL.position.set(-0.42, 0.75, 0); armL.rotation.z = 0.25;
+  group.add(armL);
+  const armR = armL.clone();
+  armR.position.x = 0.42; armR.rotation.z = -0.25;
+  group.add(armR);
+
+  // Legs
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.7 });
+  const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.55, 4, 8), legMat);
+  legL.position.set(-0.16, 0.18, 0);
+  group.add(legL);
+  const legR = legL.clone();
+  legR.position.x = 0.16;
+  group.add(legR);
+
+  // Role accessories
+  if (emp.role === 'leader') {
+    // Markus: gold crown
+    const crown = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.36, 0.36, 0.16, 8, 1, true),
+      goldMat()
+    );
+    crown.position.y = 1.78; group.add(crown);
+  } else if (emp.role === 'photographer') {
+    // Olja: tiny camera in front
+    const cam = new THREE.Mesh(
+      new THREE.BoxGeometry(0.22, 0.16, 0.12),
+      new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.3 })
+    );
+    cam.position.set(0, 1.1, 0.4);
+    group.add(cam);
+    const lens = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 0.08, 12),
+      goldMat()
+    );
+    lens.rotation.x = Math.PI / 2;
+    lens.position.set(0, 1.1, 0.5);
+    group.add(lens);
+  }
+
+  // Save handles for animation
+  group.userData.parts = { head, halo, armL, armR, legL, legR, body };
+  group.userData.idle = {
+    bobOffset: Math.random() * Math.PI * 2,
+    armSwing: Math.random() * Math.PI * 2
+  };
+  return group;
+}
+
+// Place characters in front of each building
+async function populateCharacters() {
+  const promises = [];
+  state.buildings.forEach((b, empId) => {
+    const emp = store.employees.find(e => e.id === empId);
+    if (!emp) return;
+    promises.push(
+      buildCharacter(emp).then(ch => {
+        // Position in front of building (slightly toward centre)
+        ch.position.set(0, 0, BASE_RADIUS + 0.9);
+        // Face the centre / camera
+        ch.rotation.y = Math.PI;
+        b.group.add(ch);
+        b.character = ch;
+      })
+    );
+  });
+  await Promise.all(promises);
+}
+
+// ---------- OLJA'S DRONE -------------------------------------------
+function buildDrone() {
+  const g = new THREE.Group();
+  // Central body
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.18, 0.5),
+    new THREE.MeshStandardMaterial({ color: 0x141414, metalness: 0.7, roughness: 0.3 })
+  );
+  body.castShadow = true;
+  g.add(body);
+  // Gold camera underneath
+  const cam = new THREE.Mesh(
+    new THREE.SphereGeometry(0.12, 16, 12),
+    goldMat()
+  );
+  cam.position.y = -0.14;
+  g.add(cam);
+  // 4 arms + rotors
+  const armMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.5, roughness: 0.4 });
+  const rotorMat = new THREE.MeshStandardMaterial({
+    color: 0xf7d774, transparent: true, opacity: 0.45,
+    emissive: 0xf7d774, emissiveIntensity: 0.7
+  });
+  const rotors = [];
+  [[1,1],[-1,1],[1,-1],[-1,-1]].forEach(([sx, sz]) => {
+    const arm = new THREE.Mesh(
+      new THREE.BoxGeometry(0.32, 0.06, 0.06), armMat
+    );
+    arm.position.set(0.28 * sx, 0, 0.28 * sz);
+    arm.rotation.y = Math.atan2(sz, sx);
+    g.add(arm);
+    const rotor = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.22, 0.02, 24), rotorMat
+    );
+    rotor.position.set(0.46 * sx, 0.06, 0.46 * sz);
+    g.add(rotor);
+    rotors.push(rotor);
+  });
+  // Beacon LED
+  const led = new THREE.PointLight(0xf7d774, 0.8, 6, 2);
+  led.position.y = -0.2;
+  g.add(led);
+
+  g.userData.rotors = rotors;
+  return g;
+}
+
+function spawnDrone() {
+  if (state.drone) state.scene.remove(state.drone);
+  const drone = buildDrone();
+  // Start on Olja's helipad
+  const studio = state.buildings.get('olja');
+  if (studio) {
+    drone.position.copy(studio.group.position);
+    drone.position.y = studio.helipadY ?? 8;
+  } else {
+    drone.position.set(0, 12, 0);
+  }
+  state.scene.add(drone);
+  state.drone = drone;
+  // Set up flight plan: figure-8 around the city, dipping over each building
+  state.drone.userData.path = buildDronePath();
+  state.drone.userData.t = 0;
+}
+
+// Drone path: parametric curve weaving through all employee buildings
+function buildDronePath() {
+  const points = [];
+  const ring = PLOT_RADIUS + 4;
+  // Arc above each seller, then loop back over Markus, then over each worker, then home
+  const sellers = store.employees.filter(e => e.role === 'seller');
+  const workers = store.employees.filter(e => e.role === 'worker');
+
+  // Olja's helipad (start)
+  points.push(new THREE.Vector3(OLJA_POS.x, 9, OLJA_POS.z));
+  // Over each seller
+  sellers.forEach((e, i) => {
+    const total = sellers.length;
+    const a = -Math.PI / 2 + (i + 0.5) * (Math.PI / total);
+    points.push(new THREE.Vector3(Math.cos(a) * ring, 8 + Math.sin(i) * 1.5, Math.sin(a) * ring));
+  });
+  // Loop above Markus
+  points.push(new THREE.Vector3(0, 14, 0));
+  points.push(new THREE.Vector3(3, 12, -3));
+  // Over each worker
+  workers.forEach((e, i) => {
+    const total = workers.length;
+    const a = Math.PI / 2 + (i + 0.5) * (Math.PI / total);
+    points.push(new THREE.Vector3(Math.cos(a) * ring, 8 + Math.cos(i) * 1.5, Math.sin(a) * ring));
+  });
+  // Loop above Markus again
+  points.push(new THREE.Vector3(-3, 12, 3));
+  points.push(new THREE.Vector3(0, 14, 0));
+  // Return home
+  points.push(new THREE.Vector3(OLJA_POS.x, 9, OLJA_POS.z));
+
+  return new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.3);
+}
+
+// ---------- IDLE ANIMATIONS (called from main loop) ----------------
+function updateIdleAnimations(t, dt) {
+  // Character bob + arm sway
+  state.buildings.forEach((b) => {
+    const ch = b.character;
+    if (!ch) return;
+    const idle = ch.userData.idle;
+    const phase = t * 1.6 + idle.bobOffset;
+    ch.position.y = Math.sin(phase) * 0.06;
+    const swing = Math.sin(t * 2.4 + idle.armSwing) * 0.18;
+    ch.userData.parts.armL.rotation.x = -swing;
+    ch.userData.parts.armR.rotation.x =  swing;
+    // Halo gentle rotation
+    ch.userData.parts.halo.rotation.z = t * 0.6;
+  });
+
+  // Markus' beacon pulse
+  const markus = state.buildings.get('markus');
+  if (markus?.beacon) {
+    const k = 0.6 + Math.abs(Math.sin(t * 1.4)) * 0.4;
+    markus.beacon.material.emissiveIntensity = 1.5 + k * 1.5;
+    markus.beacon.scale.setScalar(0.95 + k * 0.1);
+  }
+
+  // Drone flight along path
+  const drone = state.drone;
+  if (drone && drone.userData.path) {
+    drone.userData.t = (drone.userData.t + dt * 0.04) % 1;
+    const pt    = drone.userData.path.getPoint(drone.userData.t);
+    const next  = drone.userData.path.getPoint((drone.userData.t + 0.005) % 1);
+    drone.position.copy(pt);
+    drone.lookAt(next);
+    // Bobbing
+    drone.position.y += Math.sin(t * 4) * 0.08;
+    // Spin rotors
+    drone.userData.rotors?.forEach((r, i) => {
+      r.rotation.y += dt * (40 + (i % 2 ? 4 : -4));
+    });
+  }
+}
+
+// ---------- FOCUS CAMERA -------------------------------------------
+function focusBuilding(empId) {
+  const b = state.buildings.get(empId);
+  if (!b) return;
+  state.focusedEmpId = empId;
+  state.currentUserId = empId; // viewing also re-targets HUD
+  highlightOwnBuilding();
+
+  const target = b.group.position.clone();
+  target.y = 4;
+  const dir = target.clone().normalize();
+  const camTarget = target.clone().add(dir.multiplyScalar(8)).add(new THREE.Vector3(0, 6, 0));
+  flyCameraTo(camTarget, target);
+
+  // Also bounce the character once for greeting
+  const ch = b.character;
+  if (ch) {
+    const baseY = 0;
+    tween({
+      duration: 0.7,
+      step: (k) => {
+        const lift = Math.sin(k * Math.PI) * 0.6;
+        ch.position.y = baseY + lift;
+      }
+    });
+  }
+
+  // HUD update is wired in Part 3; stub-safe
+  updateHUDForFocused?.();
+  showGreetingFor?.(empId);
+}
+
+function flyCameraTo(camPos, lookAt) {
+  const startPos = state.camera.position.clone();
+  const startTarget = state.controls.target.clone();
+  tween({
+    duration: 1.0,
+    step: (k) => {
+      state.camera.position.lerpVectors(startPos, camPos, k);
+      state.controls.target.lerpVectors(startTarget, lookAt, k);
+      state.controls.update();
+    }
+  });
+}
+
+function flyToCityOverview() {
+  flyCameraTo(new THREE.Vector3(28, 22, 36), new THREE.Vector3(0, 4, 0));
+  state.focusedEmpId = null;
+}
+
+// ---------- REBUILD HOOK -------------------------------------------
+// Called whenever year/month/employee data changes
+async function rebuildCity() {
+  buildCity();
+  await populateCharacters();
+  spawnDrone();
+}
+
+// =====================================================================
+// END OF PART 2b — say "Continue" for Part 3:
+// login flow, HUD, navigation, year/month switcher
 // =====================================================================
