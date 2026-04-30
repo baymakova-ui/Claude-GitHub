@@ -1230,6 +1230,560 @@ async function rebuildCity() {
 }
 
 // =====================================================================
-// END OF PART 2b — say "Continue" for Part 3:
-// login flow, HUD, navigation, year/month switcher
+// PART 3 — LOGIN, HUD, NAVIGATION, ADMIN PANEL, EXPORT, INIT
+// =====================================================================
+
+// ---------- LOGIN FLOW ---------------------------------------------
+function populateLoginSelect() {
+  const sel = $('#employee-select');
+  sel.innerHTML = '<option value="">— Bitte wählen —</option>' +
+    store.employees.map(e =>
+      `<option value="${e.id}">${e.name} · ${ROLE_LABEL[e.role]}</option>`
+    ).join('');
+}
+
+function wireLogin() {
+  $('#login-btn').addEventListener('click', () => {
+    const id = $('#employee-select').value;
+    if (!id) { showToast('Bitte Mitarbeiter auswählen.', 'warn'); return; }
+    loginAs(id, false);
+  });
+
+  $('#admin-toggle').addEventListener('click', () => openModal('admin-login'));
+  $('#admin-cancel').addEventListener('click', () => closeModal('admin-login'));
+  $('#admin-login-btn').addEventListener('click', () => {
+    const pw = $('#admin-password').value;
+    if (pw === ADMIN_PASSWORD) {
+      $('#admin-error').classList.add('hidden');
+      closeModal('admin-login');
+      // Default admin entry: Ksenya, but admin sees full panel
+      loginAs('ksenya', true);
+    } else {
+      $('#admin-error').classList.remove('hidden');
+    }
+  });
+
+  $('#qr-btn').addEventListener('click', () => {
+    openModal('qr-modal');
+    const box = $('#qr-canvas');
+    box.innerHTML = '';
+    if (window.QRCode) {
+      new QRCode(box, { text: location.href, width: 220, height: 220,
+        colorDark: '#0a0a0a', colorLight: '#f7d774' });
+    }
+  });
+  $('#qr-close').addEventListener('click', () => closeModal('qr-modal'));
+
+  $('#logout-btn').addEventListener('click', logout);
+}
+
+async function loginAs(empId, asAdmin) {
+  const emp = store.employees.find(e => e.id === empId);
+  if (!emp) return;
+  localStorage.setItem(STORAGE_KEY + '_lastUser', empId);
+  state.currentUserId = empId;
+  state.isAdmin = !!asAdmin || !!emp.admin;
+  state.year = +($('#year-select').value) || new Date().getFullYear();
+  state.month = $('#month-select').value === 'all' ? 'all' : +$('#month-select').value;
+
+  $('#welcome-name').textContent = `Willkommen, ${emp.name}`;
+  $('#welcome-role').textContent = ROLE_LABEL[emp.role];
+  $('#admin-panel-btn').classList.toggle('hidden', !state.isAdmin);
+
+  setScreen('app-screen');
+
+  if (!state.scene) initThree();
+  await rebuildCity();
+  focusBuilding(empId);
+  updateHUDForFocused();
+  populateAdminSelectors();
+}
+
+function logout() {
+  state.currentUserId = null;
+  state.isAdmin = false;
+  setScreen('login-screen');
+}
+
+// ---------- HUD ----------------------------------------------------
+function updateHUDForFocused() {
+  const empId = state.focusedEmpId || state.currentUserId;
+  const emp = store.employees.find(e => e.id === empId);
+  if (!emp) return;
+  const m = getMetricForView(emp.id, state.year, state.month);
+  const info = computeBuilding(emp, m);
+  $('#hud-title').textContent = `${emp.name} · ${ROLE_LABEL[emp.role]}`;
+  renderKPIs(emp, m, info);
+  renderGoals(emp, m, info);
+  $('#nav-current').textContent = emp.name;
+}
+
+function renderKPIs(emp, m, info) {
+  const grid = $('#kpi-grid');
+  const items = [];
+  if (emp.role === 'seller' || emp.role === 'leader') {
+    items.push(['Verkäufe', m.sales || 0, '🏠']);
+    items.push(['Stockwerke', info.floors, '🏢']);
+  }
+  if (emp.role === 'worker') {
+    items.push(['Stunden / Tag', info.hpd ? info.hpd.toFixed(1) : '0', '⏱️']);
+    items.push(['Ziegel / Tag', info.bricksPerDay, '🧱']);
+    items.push(['Ziegel gesamt', info.totalBricks, '🧱']);
+  }
+  if (emp.role === 'leader') {
+    items.push(['Strategie-Blöcke', m.strategy || 0, '🧠']);
+    items.push(['Tower-Tiers', info.towerTiers, '🏛️']);
+  }
+  items.push(['Anrufe Brutto', m.callsGross || 0, '📞']);
+  items.push(['Anrufe Netto',  m.callsNet || 0, '✅']);
+  items.push(['Bewertungen', m.reviews || 0, '⭐']);
+  items.push(['Schmuck', info.decor, '✨']);
+
+  grid.innerHTML = items.map(([k, v, ic]) => `
+    <div class="kpi-card">
+      <div class="kpi-icon">${ic}</div>
+      <div class="kpi-value">${v}</div>
+      <div class="kpi-label">${k}</div>
+    </div>
+  `).join('');
+}
+
+function renderGoals(emp, m, info) {
+  const goals = [];
+  goals.push({
+    label: 'Anrufe Brutto',
+    value: m.callsGross || 0,
+    target: RULES.callsTargetGross
+  });
+  goals.push({
+    label: 'Anrufe Netto',
+    value: m.callsNet || 0,
+    target: RULES.callsTargetNet
+  });
+  if (emp.role === 'seller' || emp.role === 'leader') {
+    goals.push({ label: 'Verkäufe-Ziel', value: m.sales || 0, target: 5 });
+  }
+  $('#goals').innerHTML = goals.map(g => {
+    const pct = Math.min(100, Math.round((g.value / g.target) * 100));
+    const cls = pct >= 100 ? 'done' : '';
+    return `
+      <div class="goal ${cls}">
+        <div class="goal-row">
+          <span>${g.label}</span>
+          <span>${g.value} / ${g.target}</span>
+        </div>
+        <div class="goal-bar"><div class="goal-fill" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+function showGreetingFor(empId) {
+  const emp = store.employees.find(e => e.id === empId);
+  if (!emp) return;
+  const m = getMetricForView(emp.id, state.year, state.month);
+  const info = computeBuilding(emp, m);
+  let msg = '';
+  if (emp.role === 'seller')        msg = `Willkommen ${emp.name}! Dein Haus hat ${info.floors} Stockwerke. Weiter so!`;
+  else if (emp.role === 'worker')   msg = `Hallo ${emp.name}! ${info.bricksPerDay} Ziegel pro Tag — starke Leistung.`;
+  else if (emp.role === 'leader')   msg = `Markus, dein Strategiezentrum strahlt mit ${info.towerTiers} Tier${info.towerTiers===1?'':'s'}.`;
+  else                              msg = `Olja, deine Drohne ist startklar — auf zur nächsten Foto-Session!`;
+  const g = $('#greeting');
+  g.textContent = msg;
+  g.classList.remove('hidden');
+  clearTimeout(showGreetingFor._t);
+  showGreetingFor._t = setTimeout(() => g.classList.add('hidden'), 4200);
+}
+
+// ---------- NAVIGATION --------------------------------------------
+function wireNav() {
+  $('#nav-prev').addEventListener('click', () => stepEmployee(-1));
+  $('#nav-next').addEventListener('click', () => stepEmployee(+1));
+  $('#nav-overview').addEventListener('click', () => {
+    flyToCityOverview();
+    state.focusedEmpId = state.currentUserId;
+    updateHUDForFocused();
+  });
+  $('#hud-toggle').addEventListener('click', () => {
+    $('#hud-body').classList.toggle('collapsed');
+    $('#hud-toggle').textContent = $('#hud-body').classList.contains('collapsed') ? '▴' : '▾';
+  });
+  $('#leaderboard-btn').addEventListener('click', openLeaderboard);
+  $('#admin-panel-btn').addEventListener('click', () => openModal('admin-modal'));
+
+  // Year/month
+  $('#year-select').addEventListener('change', onPeriodChange);
+  $('#month-select').addEventListener('change', onPeriodChange);
+}
+
+function stepEmployee(dir) {
+  const ids = store.employees.map(e => e.id);
+  const cur = state.focusedEmpId || state.currentUserId;
+  const i = ids.indexOf(cur);
+  const next = ids[(i + dir + ids.length) % ids.length];
+  focusBuilding(next);
+}
+
+async function onPeriodChange() {
+  state.year  = +$('#year-select').value || new Date().getFullYear();
+  const mv = $('#month-select').value;
+  state.month = (mv === 'all') ? 'all' : +mv;
+  await rebuildCity();
+  if (state.focusedEmpId) focusBuilding(state.focusedEmpId);
+  updateHUDForFocused();
+}
+
+function populateYearSelectors() {
+  const now = new Date().getFullYear();
+  const years = [];
+  for (let y = now - 1; y <= now + 1; y++) years.push(y);
+  const fill = (sel) => {
+    sel.innerHTML = years.map(y =>
+      `<option value="${y}" ${y === state.year ? 'selected' : ''}>${y}</option>`
+    ).join('');
+  };
+  fill($('#year-select'));
+  if ($('#adm-year')) fill($('#adm-year'));
+  $('#month-select').value = state.month === 'all' ? 'all' : state.month;
+}
+
+// ---------- LEADERBOARD --------------------------------------------
+function openLeaderboard() {
+  const list = $('#leaderboard-list');
+  const items = store.employees.map(e => {
+    const m = getMetricForView(e.id, state.year, state.month);
+    const info = computeBuilding(e, m);
+    return { emp: e, info, m, score: leaderboardScore(e, m) };
+  }).sort((a, b) => b.score - a.score);
+
+  list.innerHTML = items.map((it, idx) => `
+    <div class="lb-row ${idx === 0 ? 'gold' : ''}">
+      <div class="lb-rank">${idx + 1}</div>
+      <div class="lb-name">
+        <div>${it.emp.name}</div>
+        <div class="lb-role">${ROLE_LABEL[it.emp.role]}</div>
+      </div>
+      <div class="lb-stats">
+        <span>🏢 ${it.info.floors}</span>
+        <span>🧱 ${it.info.totalBricks}</span>
+        <span>⭐ ${it.m.reviews || 0}</span>
+        <span class="lb-score">${it.score}</span>
+      </div>
+    </div>
+  `).join('');
+  openModal('leaderboard-modal');
+}
+
+// ---------- ADMIN PANEL --------------------------------------------
+function wireAdminPanel() {
+  // Tab switching
+  $$('.admin-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      $$('.admin-tabs .tab').forEach(t => t.classList.remove('active'));
+      $$('.admin-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      $(`.admin-pane[data-pane="${tab.dataset.tab}"]`).classList.add('active');
+    });
+  });
+
+  // Metrics tab
+  $('#adm-employee').addEventListener('change', loadAdminMetricsForm);
+  $('#adm-year').addEventListener('change', loadAdminMetricsForm);
+  $('#adm-month').addEventListener('change', loadAdminMetricsForm);
+  $('#adm-save').addEventListener('click', saveAdminMetrics);
+  $('#adm-reset').addEventListener('click', resetAdminMetrics);
+
+  // Employees tab
+  $('#add-emp').addEventListener('click', addEmployee);
+
+  // Photos tab
+  $('#photo-employee').addEventListener('change', loadPhotoForEmployee);
+  $('#photo-input').addEventListener('change', onPhotoFile);
+  $('#photo-save').addEventListener('click', savePhoto);
+  $('#photo-remove').addEventListener('click', removePhoto);
+
+  // Export tab
+  $('#export-csv').addEventListener('click', () => $('#csv-output').value = buildCSV());
+  $('#copy-csv').addEventListener('click', copyCSV);
+  $('#export-json').addEventListener('click', downloadJSON);
+  $('#import-json').addEventListener('click', () => $('#json-input').click());
+  $('#json-input').addEventListener('change', importJSON);
+}
+
+function populateAdminSelectors() {
+  const opts = store.employees.map(e =>
+    `<option value="${e.id}">${e.name} · ${ROLE_LABEL[e.role]}</option>`).join('');
+  if ($('#adm-employee'))   $('#adm-employee').innerHTML = opts;
+  if ($('#photo-employee')) $('#photo-employee').innerHTML = opts;
+  renderEmployeesList();
+  loadAdminMetricsForm();
+  loadPhotoForEmployee();
+}
+
+function loadAdminMetricsForm() {
+  if (!$('#adm-employee')) return;
+  const empId = $('#adm-employee').value;
+  const year  = +$('#adm-year').value || state.year;
+  const month = +$('#adm-month').value || 0;
+  const m = getMetric(empId, year, month);
+  $('#adm-sales').value       = m.sales || 0;
+  $('#adm-calls-gross').value = m.callsGross || 0;
+  $('#adm-calls-net').value   = m.callsNet || 0;
+  $('#adm-days').value        = m.days || 0;
+  $('#adm-hours').value       = m.hours || 0;
+  $('#adm-reviews').value     = m.reviews || 0;
+  $('#adm-strategy').value    = m.strategy || 0;
+}
+
+async function saveAdminMetrics() {
+  const empId = $('#adm-employee').value;
+  const year  = +$('#adm-year').value;
+  const month = +$('#adm-month').value;
+  const oldInfo = computeBuilding(
+    store.employees.find(e => e.id === empId),
+    getMetric(empId, year, month)
+  );
+  setMetric(empId, year, month, {
+    sales:      +$('#adm-sales').value || 0,
+    callsGross: +$('#adm-calls-gross').value || 0,
+    callsNet:   +$('#adm-calls-net').value || 0,
+    days:       +$('#adm-days').value || 0,
+    hours:      +$('#adm-hours').value || 0,
+    reviews:    +$('#adm-reviews').value || 0,
+    strategy:   +$('#adm-strategy').value || 0
+  });
+  showToast('Kennzahlen gespeichert.', 'ok');
+  // Confetti if floors increased
+  const newInfo = computeBuilding(
+    store.employees.find(e => e.id === empId),
+    getMetric(empId, year, month)
+  );
+  if (newInfo.floors > oldInfo.floors) burstConfetti();
+  await rebuildCity();
+  if (state.focusedEmpId) focusBuilding(state.focusedEmpId);
+  updateHUDForFocused();
+}
+
+async function resetAdminMetrics() {
+  if (!confirm('Diesen Monat wirklich zurücksetzen?')) return;
+  const empId = $('#adm-employee').value;
+  const year  = +$('#adm-year').value;
+  const month = +$('#adm-month').value;
+  setMetric(empId, year, month, emptyMonth());
+  loadAdminMetricsForm();
+  await rebuildCity();
+  updateHUDForFocused();
+  showToast('Monat zurückgesetzt.', 'ok');
+}
+
+// Employees CRUD
+function renderEmployeesList() {
+  const root = $('#employees-list');
+  if (!root) return;
+  root.innerHTML = store.employees.map(e => `
+    <div class="emp-row">
+      <div>
+        <strong>${e.name}</strong>
+        <small>${ROLE_LABEL[e.role]}</small>
+        ${e.admin ? '<span class="badge">Admin</span>' : ''}
+      </div>
+      <div class="row">
+        <select class="role-sel" data-id="${e.id}">
+          ${['seller','worker','leader','photographer'].map(r =>
+            `<option value="${r}" ${r === e.role ? 'selected' : ''}>${ROLE_LABEL[r]}</option>`
+          ).join('')}
+        </select>
+        <button class="btn btn-outline" data-del="${e.id}">Löschen</button>
+      </div>
+    </div>
+  `).join('');
+  root.querySelectorAll('.role-sel').forEach(sel => {
+    sel.addEventListener('change', (ev) => {
+      const id = ev.target.dataset.id;
+      const e = store.employees.find(x => x.id === id);
+      if (e) { e.role = ev.target.value; saveStore(); rebuildCity(); }
+    });
+  });
+  root.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      const id = ev.target.dataset.del;
+      if (!confirm('Mitarbeiter wirklich entfernen?')) return;
+      store.employees = store.employees.filter(e => e.id !== id);
+      delete store.metrics[id];
+      saveStore();
+      renderEmployeesList();
+      populateAdminSelectors();
+      populateLoginSelect();
+      rebuildCity();
+    });
+  });
+}
+
+function addEmployee() {
+  const name = $('#new-emp-name').value.trim();
+  const role = $('#new-emp-role').value;
+  if (!name) { showToast('Bitte Name eingeben.', 'warn'); return; }
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString(36);
+  store.employees.push({
+    id, name, role,
+    color: ['#f7d774','#d4af37','#b8860b','#a87708'][Math.floor(Math.random()*4)],
+    photo: null
+  });
+  saveStore();
+  $('#new-emp-name').value = '';
+  renderEmployeesList();
+  populateAdminSelectors();
+  populateLoginSelect();
+  rebuildCity();
+  showToast('Mitarbeiter hinzugefügt.', 'ok');
+}
+
+// Photo upload
+let _pendingPhoto = null;
+function loadPhotoForEmployee() {
+  if (!$('#photo-employee')) return;
+  const id = $('#photo-employee').value;
+  const e = store.employees.find(x => x.id === id);
+  $('#photo-preview').src = e?.photo || '';
+  _pendingPhoto = null;
+}
+function onPhotoFile(ev) {
+  const f = ev.target.files?.[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    _pendingPhoto = reader.result;
+    $('#photo-preview').src = _pendingPhoto;
+  };
+  reader.readAsDataURL(f);
+}
+async function savePhoto() {
+  const id = $('#photo-employee').value;
+  const e = store.employees.find(x => x.id === id);
+  if (!e) return;
+  if (!_pendingPhoto) { showToast('Bitte Foto auswählen.', 'warn'); return; }
+  e.photo = _pendingPhoto;
+  saveStore();
+  showToast('Foto gespeichert — 3D-Avatar wird aktualisiert.', 'ok');
+  await rebuildCity();
+  if (state.focusedEmpId) focusBuilding(state.focusedEmpId);
+}
+async function removePhoto() {
+  const id = $('#photo-employee').value;
+  const e = store.employees.find(x => x.id === id);
+  if (!e) return;
+  e.photo = null;
+  saveStore();
+  $('#photo-preview').src = '';
+  await rebuildCity();
+  if (state.focusedEmpId) focusBuilding(state.focusedEmpId);
+  showToast('Foto entfernt.', 'ok');
+}
+
+// CSV / JSON
+function buildCSV() {
+  const cols = ['Mitarbeiter','Rolle','Jahr','Monat','Verkäufe','Anrufe Brutto','Anrufe Netto','Tage','Stunden','Bewertungen','Strategie'];
+  const rows = [cols.join(';')];
+  store.employees.forEach(e => {
+    const years = store.metrics[e.id] || {};
+    Object.keys(years).forEach(y => {
+      Object.keys(years[y]).forEach(mo => {
+        const m = years[y][mo];
+        rows.push([
+          e.name, ROLE_LABEL[e.role], y, MONTHS_DE[+mo] || mo,
+          m.sales||0, m.callsGross||0, m.callsNet||0,
+          m.days||0, m.hours||0, m.reviews||0, m.strategy||0
+        ].join(';'));
+      });
+    });
+  });
+  return rows.join('\n');
+}
+async function copyCSV() {
+  const csv = buildCSV();
+  $('#csv-output').value = csv;
+  try { await navigator.clipboard.writeText(csv); showToast('In Zwischenablage kopiert.', 'ok'); }
+  catch { showToast('Bitte aus Textfeld kopieren.', 'warn'); }
+}
+function downloadJSON() {
+  const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `immocity-backup-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON(ev) {
+  const f = ev.target.files?.[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.employees || !data.metrics) throw new Error('Ungültige Datei.');
+      if (!confirm('Aktuelle Daten überschreiben?')) return;
+      store = data;
+      saveStore();
+      populateLoginSelect();
+      populateAdminSelectors();
+      await rebuildCity();
+      showToast('Import erfolgreich.', 'ok');
+    } catch (err) {
+      showToast('Import fehlgeschlagen: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(f);
+}
+
+// ---------- CONFETTI ----------------------------------------------
+function burstConfetti() {
+  const layer = $('#confetti-layer');
+  if (!layer) return;
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = ['#f7d774','#d4af37','#b8860b','#fff'][i%4];
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.animationDuration = (1.6 + Math.random() * 0.8) + 's';
+    layer.appendChild(piece);
+    setTimeout(() => piece.remove(), 2800);
+  }
+}
+
+// ---------- INIT ---------------------------------------------------
+function init() {
+  // Default year/month
+  state.year  = new Date().getFullYear();
+  state.month = new Date().getMonth();
+  populateYearSelectors();
+  populateLoginSelect();
+  wireLogin();
+  wireNav();
+  wireAdminPanel();
+
+  // Sync admin year selector at startup
+  const admYear = $('#adm-year');
+  if (admYear && !admYear.options.length) {
+    const now = new Date().getFullYear();
+    admYear.innerHTML = [now-1, now, now+1].map(y =>
+      `<option value="${y}" ${y === now ? 'selected' : ''}>${y}</option>`).join('');
+  }
+  $('#adm-month').value = String(state.month);
+
+  // Restore last user (optional convenience)
+  const last = localStorage.getItem(STORAGE_KEY + '_lastUser');
+  if (last && store.employees.find(e => e.id === last)) {
+    $('#employee-select').value = last;
+  }
+}
+
+// Boot when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+// =====================================================================
+// END OF app.js — all parts complete
 // =====================================================================
