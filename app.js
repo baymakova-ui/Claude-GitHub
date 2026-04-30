@@ -397,13 +397,415 @@ function tween({ duration = 0.6, step, done }) {
   state.animTargets.push({ duration, elapsed: 0, step, done });
 }
 
-// Stub — real version in Part 2
-function focusBuilding(empId) {
-  state.focusedEmpId = empId;
-  // Full focus camera animation arrives in Part 2
+// =====================================================================
+// PART 2a — CITY LAYOUT & BUILDING GEOMETRIES
+// =====================================================================
+
+const FLOOR_HEIGHT  = 1.6;
+const BASE_RADIUS   = 1.6;
+const PLOT_RADIUS   = 14;   // ring on which seller/worker plots sit
+const MARKUS_POS    = new THREE.Vector3(0, 0, 0);
+const OLJA_POS      = new THREE.Vector3(0, 0, 22);
+
+// Shared materials (built once, recoloured per-employee)
+const goldMat = () => new THREE.MeshStandardMaterial({
+  color: 0xd4af37, metalness: 0.85, roughness: 0.25, emissive: 0x2a1f04, emissiveIntensity: 0.3
+});
+const darkMat = () => new THREE.MeshStandardMaterial({
+  color: 0x141414, metalness: 0.4, roughness: 0.7
+});
+const windowMat = () => new THREE.MeshStandardMaterial({
+  color: 0xf7d774, emissive: 0xf7d774, emissiveIntensity: 0.8, metalness: 0.2, roughness: 0.4
+});
+
+function plotPositionFor(emp, employees) {
+  if (emp.role === 'leader') return MARKUS_POS.clone();
+  if (emp.role === 'photographer') return OLJA_POS.clone();
+  // Sellers + workers arranged on a ring, sellers on front half, workers on back half
+  const sellers = employees.filter(e => e.role === 'seller');
+  const workers = employees.filter(e => e.role === 'worker');
+  const ring = emp.role === 'seller' ? sellers : workers;
+  const idx = ring.findIndex(e => e.id === emp.id);
+  const total = ring.length;
+  const arc = emp.role === 'seller' ? Math.PI : Math.PI;       // half-circle each
+  const offset = emp.role === 'seller' ? -Math.PI / 2 : Math.PI / 2;
+  const a = offset + (idx + 0.5) * (arc / total);
+  return new THREE.Vector3(Math.cos(a) * PLOT_RADIUS, 0, Math.sin(a) * PLOT_RADIUS);
+}
+
+// ---------- LABEL / LOGO SPRITE ------------------------------------
+function makeLabelSprite(text) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 160;
+  const ctx = c.getContext('2d');
+  // Plate
+  ctx.fillStyle = 'rgba(10,10,10,0.92)';
+  roundRect(ctx, 8, 8, 496, 144, 24); ctx.fill();
+  // Gold border
+  const grad = ctx.createLinearGradient(0, 0, 512, 160);
+  grad.addColorStop(0, '#f7d774'); grad.addColorStop(1, '#b8860b');
+  ctx.strokeStyle = grad; ctx.lineWidth = 4;
+  roundRect(ctx, 8, 8, 496, 144, 24); ctx.stroke();
+  // Mini logo (gold house)
+  ctx.strokeStyle = grad; ctx.lineWidth = 4; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(48, 110); ctx.lineTo(48, 70); ctx.lineTo(88, 40);
+  ctx.lineTo(128, 70); ctx.lineTo(128, 110); ctx.closePath();
+  ctx.stroke();
+  // Name
+  ctx.fillStyle = '#f7d774';
+  ctx.font = '700 56px Montserrat, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 160, 80);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(4.8, 1.5, 1);
+  return sprite;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y,     x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x,     y + h, r);
+  ctx.arcTo(x,     y + h, x,     y,     r);
+  ctx.arcTo(x,     y,     x + w, y,     r);
+  ctx.closePath();
+}
+
+// ---------- BUILDING FACTORIES -------------------------------------
+function buildSellerHouse(emp, info) {
+  // Townhouse: stone base + N glowing floors + gold roof; floors animate up
+  const group = new THREE.Group();
+  group.userData.empId = emp.id;
+
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(BASE_RADIUS * 2.2, 1.0, BASE_RADIUS * 2.2),
+    new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.85 })
+  );
+  base.position.y = 0.5;
+  base.castShadow = base.receiveShadow = true;
+  group.add(base);
+
+  const floors = [];
+  for (let i = 0; i < info.floors; i++) {
+    const floor = makeFloorMesh(emp, i);
+    floor.position.y = 1 + i * FLOOR_HEIGHT - FLOOR_HEIGHT / 2; // grow up from base
+    floor.scale.set(1, 0.001, 1); // animate in
+    group.add(floor);
+    floors.push(floor);
+    // Animate scale up sequentially
+    tween({
+      duration: 0.5,
+      step: (k) => { floor.scale.y = Math.max(0.001, k); floor.position.y = 1 + i * FLOOR_HEIGHT + (FLOOR_HEIGHT/2) * (k - 1); },
+      done: () => { floor.scale.y = 1; floor.position.y = 1 + i * FLOOR_HEIGHT + FLOOR_HEIGHT/2; }
+    });
+  }
+
+  // Gold pyramidal roof
+  const roofY = 1 + info.floors * FLOOR_HEIGHT;
+  const roof = new THREE.Mesh(
+    new THREE.ConeGeometry(BASE_RADIUS * 1.6, 1.2, 4),
+    goldMat()
+  );
+  roof.rotation.y = Math.PI / 4;
+  roof.position.y = roofY + 0.6;
+  roof.castShadow = true;
+  group.add(roof);
+
+  return { group, floors, roof, base };
+}
+
+function makeFloorMesh(emp, floorIdx) {
+  const w = BASE_RADIUS * 2;
+  const m = new THREE.Group();
+  // Walls
+  const walls = new THREE.Mesh(
+    new THREE.BoxGeometry(w, FLOOR_HEIGHT * 0.95, w),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color(emp.color || '#d4af37').multiplyScalar(0.35),
+      roughness: 0.6, metalness: 0.2
+    })
+  );
+  walls.castShadow = walls.receiveShadow = true;
+  m.add(walls);
+  // 4 glowing windows
+  const wgeo = new THREE.PlaneGeometry(0.45, 0.55);
+  const wmat = windowMat();
+  for (let s = 0; s < 4; s++) {
+    const win = new THREE.Mesh(wgeo, wmat);
+    const ang = (s / 4) * Math.PI * 2 + Math.PI / 4;
+    win.position.set(Math.cos(ang) * (w/2 + 0.01), 0, Math.sin(ang) * (w/2 + 0.01));
+    win.lookAt(win.position.clone().multiplyScalar(2));
+    m.add(win);
+  }
+  return m;
+}
+
+function buildWorkerHouse(emp, info) {
+  // Brick-style cottage; bricks per day shown as visible courses
+  const group = new THREE.Group();
+  group.userData.empId = emp.id;
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(BASE_RADIUS * 1.3, BASE_RADIUS * 1.5, 0.6, 8),
+    new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 })
+  );
+  base.position.y = 0.3; base.castShadow = base.receiveShadow = true;
+  group.add(base);
+
+  const floors = [];
+  const totalH = Math.max(1, info.floors) * FLOOR_HEIGHT;
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(BASE_RADIUS * 2, totalH, BASE_RADIUS * 2),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color(emp.color || '#b8860b').multiplyScalar(0.45),
+      roughness: 0.75
+    })
+  );
+  body.position.y = 0.6 + totalH / 2;
+  body.castShadow = body.receiveShadow = true;
+  group.add(body);
+  floors.push(body);
+
+  // Brick courses — bricksPerDay visualized as lit dots wrapping the body
+  const dots = Math.min(info.bricksPerDay, 24);
+  for (let i = 0; i < dots; i++) {
+    const a = (i / dots) * Math.PI * 2;
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 8, 8),
+      windowMat()
+    );
+    dot.position.set(
+      Math.cos(a) * (BASE_RADIUS + 0.05),
+      0.6 + totalH * 0.5 + Math.sin(i * 0.7) * (totalH / 3),
+      Math.sin(a) * (BASE_RADIUS + 0.05)
+    );
+    group.add(dot);
+  }
+
+  // Roof — flat gold slab
+  const roof = new THREE.Mesh(
+    new THREE.BoxGeometry(BASE_RADIUS * 2.2, 0.2, BASE_RADIUS * 2.2),
+    goldMat()
+  );
+  roof.position.y = 0.6 + totalH + 0.1; roof.castShadow = true;
+  group.add(roof);
+
+  return { group, floors, roof, base };
+}
+
+function buildLeaderTower(emp, info) {
+  // Markus' Strategiezentrum — central tower with stacked tiers
+  const group = new THREE.Group();
+  group.userData.empId = emp.id;
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.2, 2.6, 0.8, 16),
+    goldMat()
+  );
+  base.position.y = 0.4; base.castShadow = base.receiveShadow = true;
+  group.add(base);
+
+  const floors = [];
+  const trunkH = info.floors * FLOOR_HEIGHT;
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.4, 1.6, trunkH, 12),
+    new THREE.MeshStandardMaterial({ color: 0x191512, roughness: 0.5, metalness: 0.5 })
+  );
+  trunk.position.y = 0.8 + trunkH / 2;
+  trunk.castShadow = trunk.receiveShadow = true;
+  group.add(trunk);
+  floors.push(trunk);
+
+  // Glowing window bands
+  for (let i = 0; i < info.floors; i++) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(1.55, 0.06, 8, 32),
+      windowMat()
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.8 + i * FLOOR_HEIGHT + FLOOR_HEIGHT * 0.5;
+    group.add(ring);
+  }
+
+  // Strategy tiers — gold rings stacked on top
+  let tierY = 0.8 + trunkH;
+  for (let i = 0; i < info.towerTiers; i++) {
+    const r = 1.2 - i * 0.12;
+    const tier = new THREE.Mesh(
+      new THREE.CylinderGeometry(r, r + 0.15, 0.6, 12),
+      goldMat()
+    );
+    tier.position.y = tierY + 0.3;
+    tier.castShadow = true;
+    group.add(tier);
+    tierY += 0.7;
+  }
+
+  // Crown — gold spire with beacon
+  const spire = new THREE.Mesh(
+    new THREE.ConeGeometry(0.8, 2.4, 12),
+    goldMat()
+  );
+  spire.position.y = tierY + 1.2;
+  group.add(spire);
+
+  const beacon = new THREE.Mesh(
+    new THREE.SphereGeometry(0.32, 16, 16),
+    new THREE.MeshStandardMaterial({
+      color: 0xf7d774, emissive: 0xf7d774, emissiveIntensity: 2.5
+    })
+  );
+  beacon.position.y = tierY + 2.6;
+  beacon.userData.beacon = true;
+  group.add(beacon);
+
+  const beaconLight = new THREE.PointLight(0xf7d774, 1.6, 30, 2);
+  beaconLight.position.copy(beacon.position);
+  group.add(beaconLight);
+
+  return { group, floors, roof: spire, base, beacon };
+}
+
+function buildPhotographerStudio(emp, info) {
+  // Olja's studio — glass dome with helipad for the drone
+  const group = new THREE.Group();
+  group.userData.empId = emp.id;
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.4, 2.6, 0.6, 16),
+    new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.7 })
+  );
+  base.position.y = 0.3; base.castShadow = base.receiveShadow = true;
+  group.add(base);
+
+  const floors = [];
+  const bodyH = info.floors * FLOOR_HEIGHT;
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.8, 2.0, bodyH, 16),
+    new THREE.MeshStandardMaterial({
+      color: 0x1a1a20, roughness: 0.4, metalness: 0.6,
+      emissive: 0x33260a, emissiveIntensity: 0.3
+    })
+  );
+  body.position.y = 0.6 + bodyH / 2;
+  body.castShadow = body.receiveShadow = true;
+  group.add(body);
+  floors.push(body);
+
+  // Glass dome
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(1.9, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.MeshPhysicalMaterial({
+      color: 0xf7d774, transparent: true, opacity: 0.35,
+      transmission: 0.6, roughness: 0.15, metalness: 0.2,
+      emissive: 0xf7d774, emissiveIntensity: 0.15
+    })
+  );
+  dome.position.y = 0.6 + bodyH;
+  group.add(dome);
+
+  // Helipad ring — landing target for drone
+  const pad = new THREE.Mesh(
+    new THREE.RingGeometry(0.6, 0.9, 24),
+    new THREE.MeshBasicMaterial({ color: 0xf7d774, side: THREE.DoubleSide })
+  );
+  pad.rotation.x = -Math.PI / 2;
+  pad.position.y = 0.6 + bodyH + 1.92;
+  group.add(pad);
+
+  return { group, floors, roof: dome, base, helipadY: pad.position.y };
+}
+
+// ---------- BUILD CITY (one building per employee) -----------------
+function buildCity() {
+  // Clear previous
+  state.buildings.forEach(b => state.scene.remove(b.group));
+  state.buildings.clear();
+
+  const emp = currentUser();
+  if (!emp) return;
+
+  const view = state.month === 'all'
+    ? aggregateYear(emp.id, state.year)
+    : getMetric(emp.id, state.year, state.month);
+
+  // Build current user's own building (and the rest of the city as neighbours)
+  store.employees.forEach(e => {
+    const m = state.month === 'all'
+      ? aggregateYear(e.id, state.year)
+      : getMetric(e.id, state.year, state.month);
+    const info = computeBuilding(e, m);
+    let built;
+    if (e.role === 'seller')        built = buildSellerHouse(e, info);
+    else if (e.role === 'worker')   built = buildWorkerHouse(e, info);
+    else if (e.role === 'leader')   built = buildLeaderTower(e, info);
+    else                            built = buildPhotographerStudio(e, info);
+
+    const pos = plotPositionFor(e, store.employees);
+    built.group.position.copy(pos);
+    // Face the centre
+    built.group.lookAt(new THREE.Vector3(0, built.group.position.y, 0));
+
+    // Label sprite
+    const label = makeLabelSprite(e.name);
+    label.position.set(0, (info.floors + 1) * FLOOR_HEIGHT + 1.4, 0);
+    built.group.add(label);
+    built.label = label;
+
+    // Decor: gold hedges around base for each "Bewertung-Schmuck"
+    addDecor(built.group, info.decor);
+
+    // Character placeholder slot — populated in Part 2b
+    built.character = null;
+    built.info = info;
+
+    state.scene.add(built.group);
+    state.buildings.set(e.id, built);
+  });
+
+  // Highlight current user's building
+  highlightOwnBuilding();
+}
+
+function addDecor(group, decorCount) {
+  const n = Math.min(decorCount, 8);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const hedge = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 10, 10),
+      new THREE.MeshStandardMaterial({
+        color: 0xb8860b, emissive: 0x3a2a05, emissiveIntensity: 0.5,
+        metalness: 0.6, roughness: 0.4
+      })
+    );
+    hedge.position.set(Math.cos(a) * 2.4, 0.3, Math.sin(a) * 2.4);
+    hedge.castShadow = true;
+    group.add(hedge);
+  }
+}
+
+function highlightOwnBuilding() {
+  const me = state.currentUserId;
+  state.buildings.forEach((b, id) => {
+    const isMine = id === me;
+    if (b.label) b.label.material.opacity = isMine ? 1 : 0.7;
+    // Gold pulse light at base for current user
+    if (isMine && !b.glow) {
+      const glow = new THREE.PointLight(0xf7d774, 1.2, 8, 2);
+      glow.position.set(0, 0.6, 0);
+      b.group.add(glow);
+      b.glow = glow;
+    }
+  });
 }
 
 // =====================================================================
-// END OF PART 1 — wait for "Continue" to receive Part 2:
-// 3D buildings, characters, photo→avatar, animations
+// END OF PART 2a — say "Continue" for Part 2b:
+// characters from photos, drone, idle animations, focus camera
 // =====================================================================
