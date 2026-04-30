@@ -166,19 +166,19 @@ h1, h2, h3 { font-family: var(--font-h); font-weight: 800; letter-spacing: 0.5px
 .hud-body { padding: 14px 16px; max-height: 60vh; overflow-y: auto; }
 .hud-body.collapsed { display: none; }
 .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.kpi {
+.kpi-card {
   background: rgba(255,255,255,0.03); border: 1px solid var(--border);
   border-radius: 10px; padding: 10px 12px;
 }
+.kpi-icon { font-size: 18px; }
 .kpi-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
 .kpi-value { font-family: var(--font-h); font-weight: 700; font-size: 22px; color: var(--gold-1); margin-top: 2px; }
-.kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-.kpi.full { grid-column: 1/-1; }
 .goals { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
 .goal { font-size: 12px; }
-.goal-label { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text-dim); }
+.goal-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text-dim); }
 .goal-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden; }
-.goal-bar > span { display: block; height: 100%; background: var(--gold-grad); border-radius: 3px; transition: width 0.6s ease; }
+.goal-fill { display: block; height: 100%; background: var(--gold-grad); border-radius: 3px; transition: width 0.6s ease; }
+.goal.done .goal-fill { box-shadow: 0 0 12px rgba(247,215,116,0.6); }
 
 /* CITY NAV */
 #city-nav {
@@ -235,9 +235,10 @@ h1, h2, h3 { font-family: var(--font-h); font-weight: 800; letter-spacing: 0.5px
 .photo-area img:not([src]), .photo-area img[src=""] { display: none; }
 
 #employees-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding: 6px 0; }
-.emp-row { display: grid; grid-template-columns: 1fr 130px 100px 60px; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; align-items: center; background: rgba(255,255,255,0.02); }
-.emp-row input, .emp-row select { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 13px; }
-.emp-row .del-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid #ff4444; background: transparent; color: #ff4444; cursor: pointer; }
+.emp-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; align-items: center; background: rgba(255,255,255,0.02); }
+.emp-row small { display: block; color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+.emp-row .badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--gold-grad); color: #0a0a0a; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.emp-row select { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 13px; }
 
 /* LEADERBOARD */
 #leaderboard-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 18px; }
@@ -245,7 +246,9 @@ h1, h2, h3 { font-family: var(--font-h); font-weight: 800; letter-spacing: 0.5px
 .lb-rank { font-family: var(--font-h); font-weight: 900; font-size: 24px; color: var(--gold-1); text-align: center; }
 .lb-row.gold { border-color: var(--gold-2); background: linear-gradient(90deg, rgba(212,175,55,0.12), rgba(212,175,55,0.02)); }
 .lb-name { font-family: var(--font-h); font-weight: 700; }
-.lb-stats { font-size: 12px; color: var(--text-dim); }
+.lb-role { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.lb-stats { display: flex; gap: 12px; font-size: 12px; color: var(--text-dim); align-items: center; }
+.lb-score { font-family: var(--font-h); font-weight: 700; color: var(--gold-1); font-size: 16px; padding-left: 8px; border-left: 1px solid var(--border); }
 
 /* GREETING */
 .greeting {
@@ -265,6 +268,9 @@ h1, h2, h3 { font-family: var(--font-h); font-weight: 800; letter-spacing: 0.5px
   z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   animation: toastIn 0.4s ease;
 }
+.toast.error { background: linear-gradient(135deg, #ff6b6b, #c93636); color: #fff; }
+.toast.warn  { background: linear-gradient(135deg, #f7c948, #c9962b); color: #0a0a0a; }
+.toast.ok    { background: var(--gold-grad); }
 @keyframes toastIn { 0%{opacity:0; transform:translateX(-50%) translateY(-20px)} 100%{opacity:1; transform:translateX(-50%) translateY(0)} }
 
 /* CONFETTI */
