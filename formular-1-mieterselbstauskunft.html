@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mieterselbstauskunft · Immokanzlei GmbH</title>
+<meta name="description" content="Mieterselbstauskunft der Immokanzlei GmbH — Tenant screening application form." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #0d1f3c;
+    --primary-dark: #0a1628;
+    --primary-deep: #102040;
+    --accent: #c9a84c;
+    --accent-dark: #b3923f;
+    --accent-light: rgba(201, 168, 76, 0.13);
+    --accent-bg: rgba(201, 168, 76, 0.06);
+    --white: #ffffff;
+    --bg: #f4f2ed;
+    --muted: #6b7280;
+    --border: #d4d0c9;
+    --error: #c0392b;
+    --error-light: rgba(192, 57, 43, 0.09);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { min-height: 100%; }
+
+  body {
+    font-family: 'Mulish', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--primary);
+    background: linear-gradient(140deg, #0a1628 0%, #0d1f3c 50%, #102040 100%);
+    min-height: 100vh;
+    padding: 36px 16px 36px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 10% 0%, rgba(201, 168, 76, 0.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 95% 15%, rgba(201, 168, 76, 0.06), transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201, 168, 76, 0.05), transparent 70%);
+    z-index: -2;
+    pointer-events: none;
+  }
+
+  .page-shell {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ───── Logo ───── */
+  .brand-bar {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .brand-bar img {
+    height: 64px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.96;
+  }
+
+  /* ───── Progress panel ───── */
+  .progress-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 14px;
+    padding: 18px 22px 16px;
+    margin-bottom: 18px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 10px;
+  }
+  .progress-meta .pct { color: var(--accent); }
+
+  .progress-track {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #d8b75c);
+    width: 20%;
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .step-dots {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.20);
+    transition: all 0.3s ease;
+  }
+  .step-dot.done { background: rgba(201, 168, 76, 0.55); }
+  .step-dot.active {
+    background: var(--accent);
+    transform: scale(1.4);
+    box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.18);
+  }
+
+  /* ───── Card ───── */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #102b50 100%);
+    color: var(--white);
+    padding: 38px 40px 34px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.16), transparent 70%);
+    pointer-events: none;
+  }
+  .card-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(201, 168, 76, 0.12);
+    border: 1px solid rgba(201, 168, 76, 0.30);
+    color: var(--accent);
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .logo-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .step-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: rgba(201, 168, 76, 0.85);
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-header h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .card-header .subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 14.5px;
+    font-weight: 300;
+    max-width: 520px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ───── Body ───── */
+  .card-body {
+    padding: 32px 36px 28px;
+    background: var(--white);
+    position: relative;
+    min-height: 320px;
+  }
+
+  .step {
+    display: none;
+    animation: stepIn 0.3s ease both;
+  }
+  .step.active { display: block; }
+  .step.exiting { animation: stepOut 0.3s ease both; }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(14px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes stepOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-14px); }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+  }
+  .grid .full { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; }
+
+  label.lbl {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 7px;
+    letter-spacing: 0.01em;
+  }
+  label.lbl .req { color: var(--accent); margin-left: 2px; }
+
+  .hint {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 14.5px;
+    color: var(--primary);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  input.err, select.err, textarea.err {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px var(--error-light);
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 38px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%230d1f3c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+  }
+
+  .euro-wrap { position: relative; }
+  .euro-wrap .euro {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14.5px;
+    font-weight: 500;
+    pointer-events: none;
+  }
+  .euro-wrap input { padding-left: 28px; }
+
+  .err-msg {
+    display: none;
+    color: var(--error);
+    font-size: 12px;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .err-msg.v { display: block; }
+
+  /* Radio pills */
+  .pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .pills input[type="radio"] { display: none; }
+  .pills label {
+    flex: 1;
+    min-width: 90px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    user-select: none;
+  }
+  .pills label:hover {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .pills input[type="radio"]:checked + label {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  /* Conditional */
+  .cond {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-bottom: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-bottom 0.3s ease;
+  }
+  .cond.open {
+    max-height: 240px;
+    opacity: 1;
+    margin-bottom: 18px;
+  }
+
+  /* Divider */
+  .divider {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    margin: 6px 0;
+  }
+
+  /* Checkboxes */
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .check-row:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .check-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .check-row label {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--primary);
+    cursor: pointer;
+    flex: 1;
+  }
+  .check-row.err-state { border-color: var(--error); box-shadow: 0 0 0 3px var(--error-light); }
+
+  /* ───── Footer Nav ───── */
+  .nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 36px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+  }
+
+  .btn {
+    font-family: 'Mulish', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-back {
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--border);
+  }
+  .btn-back:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .btn-back[hidden] { visibility: hidden; }
+
+  .btn-next {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+  }
+  .btn-next:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(13, 31, 60, 0.25);
+  }
+
+  .btn-submit {
+    background: var(--accent);
+    color: var(--primary);
+    border-color: var(--accent);
+  }
+  .btn-submit:hover {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(201, 168, 76, 0.4);
+  }
+  .btn[disabled] { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+
+  /* ───── Success ───── */
+  .success-state {
+    display: none;
+    text-align: center;
+    padding: 30px 20px 14px;
+  }
+  .success-state.v { display: block; }
+
+  .check-circle {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 24px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    box-shadow: 0 10px 30px rgba(13, 31, 60, 0.2);
+  }
+  .check-circle svg { width: 44px; height: 44px; }
+  @keyframes scaleIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .success-state h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+  .success-state p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 460px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+  .contact-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: var(--bg);
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    color: var(--primary);
+  }
+  .contact-row a { color: var(--primary); text-decoration: none; font-weight: 600; }
+  .contact-row a:hover { color: var(--accent); }
+  .contact-row span { display: inline-flex; align-items: center; gap: 6px; }
+
+  /* ───── Page Footer ───── */
+  .page-footer {
+    text-align: center;
+    margin-top: 28px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+  }
+  .page-footer a {
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    margin: 0 8px;
+    transition: color 0.2s;
+  }
+  .page-footer a:hover { color: var(--accent); }
+
+  /* ───── Mobile ───── */
+  @media (max-width: 600px) {
+    body { padding: 18px 12px 24px; }
+    .card-header { padding: 28px 22px 26px; }
+    .card-header h1 { font-size: 23px; }
+    .card-header .subtitle { font-size: 13.5px; }
+    .card-body { padding: 24px 20px 20px; }
+    .nav-bar { padding: 16px 20px 18px; }
+    .grid { grid-template-columns: 1fr; gap: 14px; }
+    .pills { flex-direction: column; }
+    .pills label { width: 100%; }
+    .progress-panel { padding: 14px 16px; }
+    .success-state h2 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-shell">
+
+  <div class="brand-bar">
+    <img src="https://immokanzlei24.de/wp-content/uploads/2025/03/Logo-Immokanzlei-GmbH-transparent-e1742371123325-300x183.png" alt="Immokanzlei GmbH" />
+  </div>
+
+  <div class="progress-panel" id="progressPanel">
+    <div class="progress-meta">
+      <span id="stepLabel">Schritt 1 von 5</span>
+      <span class="pct" id="pctLabel">20 %</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="step-dots" id="stepDots">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="card-header">
+      <div class="logo-badge">Mieterselbstauskunft</div>
+      <div class="step-eyebrow" id="eyebrow">Schritt 1 / 5</div>
+      <h1 id="cardTitle">Kontaktdaten</h1>
+      <p class="subtitle" id="cardSubtitle">Ihre grundlegenden Kontaktinformationen für die Kommunikation mit uns.</p>
+    </div>
+
+    <form id="form1" novalidate>
+
+      <div class="card-body" id="cardBody">
+
+        <!-- ───── Step 1 ───── -->
+        <div class="step active" data-step="1">
+          <div class="grid">
+            <div class="field">
+              <label class="lbl" for="vorname">Vorname<span class="req">*</span></label>
+              <input type="text" id="vorname" name="vorname" autocomplete="given-name" required />
+              <span class="err-msg">Bitte geben Sie Ihren Vornamen an.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="nachname">Nachname<span class="req">*</span></label>
+              <input type="text" id="nachname" name="nachname" autocomplete="family-name" required />
+              <span class="err-msg">Bitte geben Sie Ihren Nachnamen an.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="email">E-Mail-Adresse<span class="req">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" required />
+              <span class="err-msg">Bitte geben Sie eine gültige E-Mail-Adresse an.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="telefon">Telefonnummer<span class="req">*</span></label>
+              <input type="tel" id="telefon" name="telefon" autocomplete="tel" required />
+              <span class="err-msg">Bitte geben Sie Ihre Telefonnummer an.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="geburtsdatum">Geburtsdatum<span class="req">*</span></label>
+              <input type="date" id="geburtsdatum" name="geburtsdatum" required />
+              <span class="err-msg">Bitte geben Sie Ihr Geburtsdatum an.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="geburtsort">Geburtsort</label>
+              <input type="text" id="geburtsort" name="geburtsort" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── Step 2 ───── -->
+        <div class="step" data-step="2">
+          <div class="grid">
+            <div class="field">
+              <label class="lbl" for="staatsangehoerigkeit">Staatsangehörigkeit<span class="req">*</span></label>
+              <input type="text" id="staatsangehoerigkeit" name="staatsangehoerigkeit" required />
+              <span class="err-msg">Bitte angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="familienstand">Familienstand</label>
+              <select id="familienstand" name="familienstand">
+                <option value="">Bitte auswählen…</option>
+                <option>Ledig</option>
+                <option>Verheiratet</option>
+                <option>Geschieden</option>
+                <option>Verwitwet</option>
+                <option>Eingetragene Lebenspartnerschaft</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="lbl" for="anzahlPersonen">Anzahl der einziehenden Personen<span class="req">*</span></label>
+              <input type="number" id="anzahlPersonen" name="anzahlPersonen" min="1" value="1" required />
+              <span class="hint">Inkl. Antragsteller/in</span>
+              <span class="err-msg">Bitte angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl">Haustiere?<span class="req">*</span></label>
+              <div class="pills" data-radio="haustiere">
+                <input type="radio" id="haustiere-nein" name="haustiere" value="Nein" />
+                <label for="haustiere-nein">Nein</label>
+                <input type="radio" id="haustiere-ja" name="haustiere" value="Ja" />
+                <label for="haustiere-ja">Ja</label>
+              </div>
+              <span class="err-msg">Bitte auswählen.</span>
+            </div>
+
+            <div class="full cond" id="cond-haustiere">
+              <div class="field">
+                <label class="lbl" for="haustiereDetail">Welche Haustiere?</label>
+                <input type="text" id="haustiereDetail" name="haustiereDetail" placeholder="z. B. 1 Katze, klein" />
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field full">
+              <label class="lbl" for="ausweisnummer">Personalausweis-/Reisepassnummer</label>
+              <input type="text" id="ausweisnummer" name="ausweisnummer" />
+              <span class="hint">Freiwillige Angabe</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── Step 3 ───── -->
+        <div class="step" data-step="3">
+          <div class="grid">
+            <div class="field">
+              <label class="lbl" for="beschaeftigung">Beschäftigungsverhältnis<span class="req">*</span></label>
+              <select id="beschaeftigung" name="beschaeftigung" required>
+                <option value="">Bitte auswählen…</option>
+                <option>Angestellt (unbefristet)</option>
+                <option>Angestellt (befristet)</option>
+                <option>Beamter/Beamtin</option>
+                <option>Selbstständig</option>
+                <option>Freiberuflich</option>
+                <option>Rentner/Rentnerin</option>
+                <option>Student/Studentin</option>
+                <option>Arbeitssuchend</option>
+                <option>Sonstiges</option>
+              </select>
+              <span class="err-msg">Bitte auswählen.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="arbeitgeber">Arbeitgeber / Auftraggeber<span class="req">*</span></label>
+              <input type="text" id="arbeitgeber" name="arbeitgeber" required />
+              <span class="err-msg">Bitte angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="beschaeftigtSeit">Beschäftigt seit</label>
+              <input type="date" id="beschaeftigtSeit" name="beschaeftigtSeit" />
+            </div>
+            <div class="field">
+              <label class="lbl" for="nettoEinkommen">Monatl. Nettoeinkommen<span class="req">*</span></label>
+              <div class="euro-wrap">
+                <span class="euro">€</span>
+                <input type="number" id="nettoEinkommen" name="nettoEinkommen" min="0" step="1" required />
+              </div>
+              <span class="err-msg">Bitte angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl">Weitere Einkünfte?</label>
+              <div class="pills" data-radio="weitereEinkuenfte">
+                <input type="radio" id="we-nein" name="weitereEinkuenfte" value="Nein" />
+                <label for="we-nein">Nein</label>
+                <input type="radio" id="we-ja" name="weitereEinkuenfte" value="Ja" />
+                <label for="we-ja">Ja</label>
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl">In Probezeit?</label>
+              <div class="pills" data-radio="probezeit">
+                <input type="radio" id="pz-nein" name="probezeit" value="Nein" />
+                <label for="pz-nein">Nein</label>
+                <input type="radio" id="pz-ja" name="probezeit" value="Ja" />
+                <label for="pz-ja">Ja</label>
+              </div>
+            </div>
+
+            <div class="full cond" id="cond-weitereEinkuenfte">
+              <div class="field">
+                <label class="lbl" for="weitereEinkuenfteBetrag">Betrag</label>
+                <div class="euro-wrap">
+                  <span class="euro">€</span>
+                  <input type="number" id="weitereEinkuenfteBetrag" name="weitereEinkuenfteBetrag" min="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── Step 4 ───── -->
+        <div class="step" data-step="4">
+          <div class="grid">
+            <div class="field full">
+              <label class="lbl" for="aktuelleAdresse">Aktuelle Adresse<span class="req">*</span></label>
+              <input type="text" id="aktuelleAdresse" name="aktuelleAdresse" placeholder="Hauptstraße 1, 77652 Offenburg" required />
+              <span class="err-msg">Bitte angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="kaltmiete">Aktuelle Kaltmiete</label>
+              <div class="euro-wrap">
+                <span class="euro">€</span>
+                <input type="number" id="kaltmiete" name="kaltmiete" min="0" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl" for="vermieterName">Aktueller Vermieter Name</label>
+              <input type="text" id="vermieterName" name="vermieterName" />
+            </div>
+            <div class="field">
+              <label class="lbl" for="vermieterKontakt">Vermieter Telefon/E-Mail</label>
+              <input type="text" id="vermieterKontakt" name="vermieterKontakt" />
+              <span class="hint">Für Referenzanfrage</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="wohnenSeit">Wohnen seit</label>
+              <input type="date" id="wohnenSeit" name="wohnenSeit" />
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+              <label class="lbl">Mietschulden vorhanden?<span class="req">*</span></label>
+              <div class="pills" data-radio="mietschulden">
+                <input type="radio" id="ms-nein" name="mietschulden" value="Nein" />
+                <label for="ms-nein">Nein</label>
+                <input type="radio" id="ms-ja" name="mietschulden" value="Ja" />
+                <label for="ms-ja">Ja</label>
+              </div>
+              <span class="err-msg">Bitte auswählen.</span>
+            </div>
+            <div class="field">
+              <label class="lbl">SCHUFA-Auskunft vorhanden?<span class="req">*</span></label>
+              <div class="pills" data-radio="schufa">
+                <input type="radio" id="sc-ja" name="schufa" value="Ja" />
+                <label for="sc-ja">Ja</label>
+                <input type="radio" id="sc-nein" name="schufa" value="Nein" />
+                <label for="sc-nein">Nein</label>
+              </div>
+              <span class="err-msg">Bitte auswählen.</span>
+            </div>
+            <div class="field">
+              <label class="lbl">Insolvenzverfahren in letzten 5 Jahren?</label>
+              <div class="pills" data-radio="insolvenz">
+                <input type="radio" id="iv-nein" name="insolvenz" value="Nein" />
+                <label for="iv-nein">Nein</label>
+                <input type="radio" id="iv-ja" name="insolvenz" value="Ja" />
+                <label for="iv-ja">Ja</label>
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl">Kaution (3 Monatskaltmieten) leistbar?</label>
+              <div class="pills" data-radio="kaution">
+                <input type="radio" id="kt-ja" name="kaution" value="Ja" />
+                <label for="kt-ja">Ja</label>
+                <input type="radio" id="kt-nein" name="kaution" value="Nein" />
+                <label for="kt-nein">Nein</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── Step 5 ───── -->
+        <div class="step" data-step="5">
+          <div class="grid">
+            <div class="field">
+              <label class="lbl" for="einzugstermin">Gewünschter Einzugstermin<span class="req">*</span></label>
+              <input type="date" id="einzugstermin" name="einzugstermin" required />
+              <span class="err-msg">Bitte angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="mietdauer">Geplante Mietdauer</label>
+              <select id="mietdauer" name="mietdauer">
+                <option value="">Bitte auswählen…</option>
+                <option>Unbefristet</option>
+                <option>1 Jahr</option>
+                <option>2 Jahre</option>
+                <option>3 Jahre oder länger</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label class="lbl" for="umzugsgrund">Grund für den Umzug</label>
+              <textarea id="umzugsgrund" name="umzugsgrund" placeholder="z. B. Jobwechsel, mehr Platz benötigt…"></textarea>
+            </div>
+            <div class="field full">
+              <label class="lbl" for="anmerkungen">Sonstige Anmerkungen</label>
+              <textarea id="anmerkungen" name="anmerkungen" placeholder="Weitere relevante Informationen…"></textarea>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="full">
+              <div class="check-row" data-check="bestaetigung1">
+                <input type="checkbox" id="bestaetigung1" name="bestaetigung1" required />
+                <label for="bestaetigung1">Ich bestätige, dass alle Angaben wahrheitsgemäß und vollständig sind. Mir ist bekannt, dass falsche Angaben zur Anfechtung des Mietvertrags führen können. <span style="color:var(--accent);">*</span></label>
+              </div>
+              <div class="check-row" data-check="datenschutz1">
+                <input type="checkbox" id="datenschutz1" name="datenschutz1" required />
+                <label for="datenschutz1">Ich habe die <a href="https://immokanzlei24.de/datenschutzerklaerung/" target="_blank" rel="noopener" style="color:var(--accent); font-weight:600; text-decoration:none;">Datenschutzerklärung</a> der Immokanzlei GmbH gelesen und stimme der Verarbeitung meiner Daten zu. <span style="color:var(--accent);">*</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ───── Success ───── -->
+        <div class="success-state" id="successState">
+          <div class="check-circle">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 12.5L10 17.5L19 7.5" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Vielen Dank!</h2>
+          <p>Ihre Mieterselbstauskunft ist bei uns eingegangen. Wir prüfen Ihre Angaben und melden uns in Kürze bei Ihnen.</p>
+          <div class="contact-row">
+            <span>📞 <a href="tel:+4978085060730">+49 7808 5060730</a></span>
+            <span>✉️ <a href="mailto:info@immokanzlei24.de">info@immokanzlei24.de</a></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-bar" id="navBar">
+        <button type="button" class="btn btn-back" id="backBtn" hidden>← Zurück</button>
+        <button type="button" class="btn btn-next" id="nextBtn">Weiter →</button>
+        <button type="submit" class="btn btn-submit" id="submitBtn" style="display:none;">
+          <span>Absenden</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+  <div class="page-footer">
+    <a href="https://immokanzlei24.de/impressum/" target="_blank" rel="noopener">Impressum</a>·
+    <a href="https://immokanzlei24.de/datenschutzerklaerung/" target="_blank" rel="noopener">Datenschutz</a>·
+    © 2025 Immokanzlei GmbH
+  </div>
+
+</div>
+
+<script>
+  // ────────────────────────────────────────────────────────
+  // Configuration
+  // ────────────────────────────────────────────────────────
+  const GAS_URL = 'IHRE_GOOGLE_APPS_SCRIPT_URL_HIER';
+  const TOTAL_STEPS = 5;
+  const STEP_META = {
+    1: { title: 'Kontaktdaten', subtitle: 'Ihre grundlegenden Kontaktinformationen für die Kommunikation mit uns.' },
+    2: { title: 'Persönliche Angaben', subtitle: 'Informationen zu Ihrer persönlichen Situation und den zukünftigen Bewohnern.' },
+    3: { title: 'Berufliche Situation', subtitle: 'Angaben zu Ihrem Beschäftigungsverhältnis und Ihrem Einkommen.' },
+    4: { title: 'Aktuelle Wohnsituation', subtitle: 'Informationen zu Ihrer bestehenden Wohnsituation und Vermieterreferenz.' },
+    5: { title: 'Einzug & Bestätigung', subtitle: 'Ihre Wünsche zum Einzug sowie rechtliche Bestätigung Ihrer Angaben.' }
+  };
+
+  // Required fields per step
+  const REQUIRED = {
+    1: ['vorname', 'nachname', 'email', 'telefon', 'geburtsdatum'],
+    2: ['staatsangehoerigkeit', 'anzahlPersonen', 'haustiere'],
+    3: ['beschaeftigung', 'arbeitgeber', 'nettoEinkommen'],
+    4: ['aktuelleAdresse', 'mietschulden', 'schufa'],
+    5: ['einzugstermin', 'bestaetigung1', 'datenschutz1']
+  };
+
+  const RADIO_FIELDS = ['haustiere', 'weitereEinkuenfte', 'probezeit', 'mietschulden', 'schufa', 'insolvenz', 'kaution'];
+
+  let currentStep = 1;
+
+  const form = document.getElementById('form1');
+  const stepLabel = document.getElementById('stepLabel');
+  const pctLabel = document.getElementById('pctLabel');
+  const progressFill = document.getElementById('progressFill');
+  const stepDots = document.getElementById('stepDots');
+  const cardTitle = document.getElementById('cardTitle');
+  const cardSubtitle = document.getElementById('cardSubtitle');
+  const eyebrow = document.getElementById('eyebrow');
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const navBar = document.getElementById('navBar');
+  const successState = document.getElementById('successState');
+
+  // ────────────────────────────────────────────────────────
+  // Conditional fields
+  // ────────────────────────────────────────────────────────
+  function setupConditional(radioName, condId) {
+    const inputs = form.querySelectorAll(`input[name="${radioName}"]`);
+    const cond = document.getElementById(condId);
+    inputs.forEach(inp => {
+      inp.addEventListener('change', () => {
+        if (inp.checked && inp.value === 'Ja') cond.classList.add('open');
+        else if (inp.checked) cond.classList.remove('open');
+      });
+    });
+  }
+  setupConditional('haustiere', 'cond-haustiere');
+  setupConditional('weitereEinkuenfte', 'cond-weitereEinkuenfte');
+
+  // ────────────────────────────────────────────────────────
+  // Clear errors on input
+  // ────────────────────────────────────────────────────────
+  form.addEventListener('input', e => {
+    const t = e.target;
+    if (t.matches('input, select, textarea')) {
+      t.classList.remove('err');
+      const msg = t.parentElement.querySelector('.err-msg');
+      if (msg) msg.classList.remove('v');
+    }
+  });
+  form.addEventListener('change', e => {
+    const t = e.target;
+    if (t.type === 'radio') {
+      const wrap = t.closest('.field');
+      if (wrap) {
+        const msg = wrap.querySelector('.err-msg');
+        if (msg) msg.classList.remove('v');
+      }
+    }
+    if (t.type === 'checkbox') {
+      const row = t.closest('.check-row');
+      if (row) row.classList.remove('err-state');
+    }
+  });
+
+  // ────────────────────────────────────────────────────────
+  // Validation
+  // ────────────────────────────────────────────────────────
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function validateStep(stepNum) {
+    const required = REQUIRED[stepNum] || [];
+    let valid = true;
+    let firstErr = null;
+
+    required.forEach(name => {
+      if (RADIO_FIELDS.includes(name)) {
+        const checked = form.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+          const wrap = form.querySelector(`[data-radio="${name}"]`).closest('.field');
+          const msg = wrap.querySelector('.err-msg');
+          if (msg) msg.classList.add('v');
+          if (!firstErr) firstErr = wrap;
+          valid = false;
+        }
+        return;
+      }
+      const el = form.querySelector(`[name="${name}"]`);
+      if (!el) return;
+      if (el.type === 'checkbox') {
+        if (!el.checked) {
+          el.closest('.check-row').classList.add('err-state');
+          if (!firstErr) firstErr = el;
+          valid = false;
+        }
+        return;
+      }
+      const v = (el.value || '').trim();
+      if (!v) {
+        el.classList.add('err');
+        const msg = el.parentElement.querySelector('.err-msg');
+        if (msg) msg.classList.add('v');
+        if (!firstErr) firstErr = el;
+        valid = false;
+        return;
+      }
+      if (el.type === 'email' && !EMAIL_RE.test(v)) {
+        el.classList.add('err');
+        const msg = el.parentElement.querySelector('.err-msg');
+        if (msg) msg.classList.add('v');
+        if (!firstErr) firstErr = el;
+        valid = false;
+      }
+    });
+
+    if (firstErr && firstErr.scrollIntoView) {
+      firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return valid;
+  }
+
+  // ────────────────────────────────────────────────────────
+  // Step navigation
+  // ────────────────────────────────────────────────────────
+  function showStep(n) {
+    const cur = form.querySelector(`.step[data-step="${currentStep}"]`);
+    const nxt = form.querySelector(`.step[data-step="${n}"]`);
+    if (cur === nxt) return;
+
+    cur.classList.add('exiting');
+    setTimeout(() => {
+      cur.classList.remove('active', 'exiting');
+      nxt.classList.add('active');
+      currentStep = n;
+      updateUI();
+    }, 280);
+  }
+
+  function updateUI() {
+    const meta = STEP_META[currentStep];
+    cardTitle.textContent = meta.title;
+    cardSubtitle.textContent = meta.subtitle;
+    eyebrow.textContent = `Schritt ${currentStep} / ${TOTAL_STEPS}`;
+    stepLabel.textContent = `Schritt ${currentStep} von ${TOTAL_STEPS}`;
+    const pct = Math.round((currentStep / TOTAL_STEPS) * 100);
+    pctLabel.textContent = pct + ' %';
+    progressFill.style.width = pct + '%';
+
+    [...stepDots.children].forEach((d, i) => {
+      d.classList.remove('done', 'active');
+      if (i + 1 < currentStep) d.classList.add('done');
+      else if (i + 1 === currentStep) d.classList.add('active');
+    });
+
+    backBtn.hidden = currentStep === 1;
+    if (currentStep === TOTAL_STEPS) {
+      nextBtn.style.display = 'none';
+      submitBtn.style.display = 'inline-flex';
+    } else {
+      nextBtn.style.display = 'inline-flex';
+      submitBtn.style.display = 'none';
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  nextBtn.addEventListener('click', () => {
+    if (validateStep(currentStep)) showStep(currentStep + 1);
+  });
+  backBtn.addEventListener('click', () => {
+    if (currentStep > 1) showStep(currentStep - 1);
+  });
+
+  // ────────────────────────────────────────────────────────
+  // Submission
+  // ────────────────────────────────────────────────────────
+  function collectAllFields() {
+    const fd = new FormData(form);
+    const out = {};
+    for (const [k, v] of fd.entries()) {
+      out[k] = typeof v === 'string' ? v.trim() : v;
+    }
+    // Checkboxes (FormData omits unchecked)
+    out.bestaetigung1 = form.bestaetigung1.checked ? 'Ja' : 'Nein';
+    out.datenschutz1 = form.datenschutz1.checked ? 'Ja' : 'Nein';
+    return out;
+  }
+
+  function showSuccessState() {
+    [...form.querySelectorAll('.step')].forEach(s => s.classList.remove('active'));
+    successState.classList.add('v');
+    navBar.style.display = 'none';
+    cardTitle.textContent = 'Eingegangen';
+    cardSubtitle.textContent = 'Wir haben Ihre Mieterselbstauskunft erhalten.';
+    eyebrow.textContent = 'Bestätigung';
+    progressFill.style.width = '100%';
+    pctLabel.textContent = '100 %';
+    stepLabel.textContent = `Abgeschlossen`;
+    [...stepDots.children].forEach(d => { d.classList.remove('active'); d.classList.add('done'); });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateStep(currentStep)) return;
+
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Wird gesendet…';
+
+    const data = collectAllFields();
+    data.formular = 'Mieterselbstauskunft';
+    data.zeitstempel = new Date().toLocaleString('de-DE');
+
+    try {
+      await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(data),
+        mode: 'no-cors'
+      });
+    } catch (err) {
+      // opaque response is expected with no-cors
+    }
+
+    showSuccessState();
+  });
+
+  updateUI();
+</script>
+
+</body>
+</html>
