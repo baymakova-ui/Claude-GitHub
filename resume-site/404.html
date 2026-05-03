@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0; url=./index.html" />
+  <title>Redirecting…</title>
+  <script>
+    (function () {
+      var path = window.location.pathname;
+      var hash = window.location.hash || "";
+      var search = window.location.search || "";
+      // For GitHub Pages: redirect to root index.html, preserving hash
+      var target = "/" + (path.split("/")[1] || "") + "/" + (hash || search);
+      // Fallback to plain root if structure unclear
+      window.location.replace("./index.html" + search + hash);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting to <a href="./index.html">home page</a>…</p>
+</body>
+</html>

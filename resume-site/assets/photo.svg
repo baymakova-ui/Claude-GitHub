@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a2744"/>
+      <stop offset="100%" stop-color="#2d3a5a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="500" fill="url(#bg)"/>
+  <text x="200" y="260" text-anchor="middle" font-family="Georgia, serif" font-size="120" font-weight="500" fill="#b8966e" letter-spacing="6">KB</text>
+  <text x="200" y="320" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" letter-spacing="6" fill="#f7f5f0">PHOTO PLACEHOLDER</text>
+</svg>

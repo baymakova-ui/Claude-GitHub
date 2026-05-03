@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "lang": "de",
+    "title": "Ksenia Baimakova — Lebenslauf",
+    "description": "Hochqualifizierte Business Assistant. PropTech, KI-Integration, mehrsprachige Operations. Erfahrung in Deutschland und Russland."
+  },
+  "nav": {
+    "about": "Über mich",
+    "experience": "Erfahrung",
+    "education": "Ausbildung",
+    "skills": "Kompetenzen",
+    "achievements": "Erfolge",
+    "languages": "Sprachen",
+    "contact": "Kontakt"
+  },
+  "hero": {
+    "name": "Ksenia Baimakova",
+    "title": "Hochqualifizierte Business Assistant",
+    "subtitle": "PropTech · KI-Integration · Mehrsprachige Operations",
+    "scroll": "Weiter scrollen"
+  },
+  "about": {
+    "label": "Über mich",
+    "heading": "Aus Chaos werden Systeme — in vier Sprachen.",
+    "text": "Hochqualifizierte Business Assistant mit Erfahrung im deutschen PropTech-Sektor sowie in russischen Medienkonzernen. Spezialisierung auf ganzheitliche Management-Systeme: von KPI-Automatisierung und Agile-Implementierung bis zur Leitung von Marketingteams und der Begleitung internationaler Immobilientransaktionen. Verhandlungssicher in vier Sprachen. Fundierte Expertise in der Integration von KI-Lösungen.",
+    "photoCaption": "Baden-Württemberg · 2026"
+  },
+  "skills": {
+    "label": "Kompetenzen",
+    "heading": "Meine Stärken",
+    "list": [
+      "KPI-Automatisierung",
+      "Agile / Trello",
+      "Google Apps Script",
+      "Teamführung",
+      "Immobilientransaktionen (DE)",
+      "CRM Propstack",
+      "EdTech / Learning Suite",
+      "Ghostwriting",
+      "Recruiting",
+      "LiDAR Giraffe 360",
+      "KI-Tools",
+      "SMM-Leitung",
+      "Travel-Management",
+      "SOP-Entwicklung",
+      "Canva",
+      "Sprengnetter",
+      "Finanzberichte",
+      "Dokumentenmanagement"
+    ]
+  },
+  "experience": {
+    "label": "Erfahrung",
+    "heading": "Beruflicher Werdegang",
+    "items": [
+      {
+        "period": "Januar 2026 — heute",
+        "company": "Immokanzlei GmbH",
+        "location": "Baden-Württemberg, Deutschland",
+        "role": "Business Assistant der Geschäftsführung",
+        "industry": "PropTech / Immobilien",
+        "bullets": [
+          "Entwicklung eines KPI-Systems mit Google Sheets & Apps Script — automatisches Tracking aller Kennzahlen",
+          "Umstellung des Unternehmens auf Trello-basierte Planung (Change Management)",
+          "Aufbau eines Mitarbeiter-Motivationssystems mit messbarer Effizienzsteigerung",
+          "Erstellung individueller Verträge mit Dienstleistern und SOPs für sämtliche Prozesse",
+          "Co-Autorenschaft und Redaktion des Buches «Der Schlüssel» von der Konzeption bis zum Druck",
+          "Aufbau einer Unternehmensplattform in Learning Suite: Kurse, Videos, Methodik",
+          "Schlüsselfertige Erstellung eines 2,5-stündigen Webinars: Präsentation + Drehbuch",
+          "Dokumentenbegleitung von Kaufverträgen (Notartermin)",
+          "Professionelle Immobilienbewertung — Sprengnetter",
+          "Virtuelle Rundgänge und Grundrisse — LiDAR Giraffe 360",
+          "Mailings an eine Datenbank von 6 000 Kunden im CRM Propstack",
+          "Leitung eines SMM-Teams von 5 Spezialisten",
+          "Full-Cycle-Recruiting über Indeed",
+          "Travel-Support für die Geschäftsführung in der EU"
+        ]
+      },
+      {
+        "period": "November 2024 — Februar 2025",
+        "company": "Europäische Mediengruppe (EMG)",
+        "location": "Moskau, Russland",
+        "role": "Assistentin des kaufmännischen Direktors",
+        "industry": "Medien / Rundfunk",
+        "bullets": [
+          "Administrative Begleitung und Dokumentenmanagement",
+          "Offizielle Korrespondenz auf Russisch und Englisch",
+          "Finanzberichte und Spesenabrechnung",
+          "Abrechnung von Repräsentationskosten",
+          "Travel-Management der Geschäftsführung"
+        ]
+      },
+      {
+        "period": "Juni 2022 — Oktober 2024",
+        "company": "Schukowsker Kunstschule für Kinder Nr. 1",
+        "location": "Schukowski, Russland",
+        "role": "Administratorin",
+        "industry": "Bildung / Kultur",
+        "bullets": [
+          "Pflege der Website und Social-Media-Kanäle der Direktion",
+          "Koordination von Treffen mit Amtsträgern",
+          "Organisation internationaler Tourneen des Chors «Melodija»",
+          "Unterstützung bei der Wahrnehmung der Aufgaben einer kommunalen Abgeordneten"
+        ]
+      },
+      {
+        "period": "Juni — August 2021",
+        "company": "Pressestelle des Bildungs- und Wissenschaftsministeriums RF",
+        "location": "Moskau, Russland",
+        "role": "Praktikantin",
+        "industry": "Öffentliche Verwaltung",
+        "bullets": [
+          "Organisation interministerieller Treffen und Vertragsunterzeichnungen",
+          "Präsentation des Programms «Prioritet-2030» in Skolkowo",
+          "Erstellung von Berichten und Social-Media-Beiträgen"
+        ]
+      }
+    ]
+  },
+  "education": {
+    "label": "Ausbildung",
+    "heading": "Akademisches Fundament",
+    "items": [
+      {
+        "period": "2024 — 2026",
+        "institution": "Higher School of Economics (HSE)",
+        "degree": "Master: Germanica — Geschichte und Gegenwart"
+      },
+      {
+        "period": "2020 — 2024",
+        "institution": "Moskauer Staatliche Linguistische Universität (MSLU)",
+        "degree": "Bachelor: Politikwissenschaft"
+      },
+      {
+        "period": "Berufliche Weiterbildung",
+        "institution": "MSLU",
+        "degree": "Politologin mit Deutsch- und Englischkenntnissen · Übersetzerin für Französisch"
+      }
+    ],
+    "certificationsLabel": "Zertifikate",
+    "certifications": [
+      "TEFL Certificate — 200 Stunden",
+      "B2-Zertifikat Französisch (MSLU, Reg.-Nr. 21/01.2024-343)"
+    ]
+  },
+  "achievements": {
+    "label": "Erfolge",
+    "heading": "In Zahlen",
+    "items": [
+      { "number": "6000", "suffix": "+", "label": "Kunden in der Datenbank" },
+      { "number": "4", "suffix": "", "label": "Sprachen" },
+      { "number": "3", "suffix": "", "label": "Arbeitsmärkte: RU · DE · US" },
+      { "number": "1", "suffix": "", "label": "Buch redigiert und veröffentlicht" }
+    ],
+    "specialLabel": "Besondere Auszeichnungen",
+    "special": [
+      "Gewinnerin des internationalen Projekts «Botschafter der russischen Sprache in der Welt» (Puschkin-Institut) — Russischunterricht als Fremdsprache in Duschanbe (2021)",
+      "Stipendium der Moskauer Regierung für individuelle Leistungen (2022)"
+    ]
+  },
+  "languages": {
+    "label": "Sprachen",
+    "heading": "Vier Sprachen verhandlungssicher",
+    "items": [
+      { "name": "Russisch", "level": "Muttersprache", "percent": 100 },
+      { "name": "Englisch", "level": "C1", "percent": 90 },
+      { "name": "Deutsch", "level": "B2", "percent": 75 },
+      { "name": "Französisch", "level": "B2", "percent": 75 }
+    ]
+  },
+  "contact": {
+    "label": "Kontakt",
+    "heading": "Sprechen wir über Ihre Position",
+    "intro": "Offen für Angebote in Deutschland, Russland und Remote.",
+    "email": "baymakova.ksenya@mail.ru",
+    "phone": "+7 916 127 5862",
+    "cta": "Nachricht senden",
+    "emailLabel": "E-Mail",
+    "phoneLabel": "Telefon"
+  },
+  "download": {
+    "label": "Lebenslauf herunterladen",
+    "ru": "🇷🇺 PDF herunterladen (RU)",
+    "de": "🇩🇪 Lebenslauf PDF (DE)",
+    "en": "🇺🇸 Download PDF (EN)"
+  },
+  "footer": {
+    "rights": "Alle Rechte vorbehalten"
+  }
+}

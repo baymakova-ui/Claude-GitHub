@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "lang": "en",
+    "title": "Ksenia Baimakova — Resume",
+    "description": "Executive Business Assistant. PropTech, AI integration, multilingual operations. Experience across Germany and Russia."
+  },
+  "nav": {
+    "about": "About",
+    "experience": "Experience",
+    "education": "Education",
+    "skills": "Skills",
+    "achievements": "Achievements",
+    "languages": "Languages",
+    "contact": "Contact"
+  },
+  "hero": {
+    "name": "Ksenia Baimakova",
+    "title": "Executive Business Assistant",
+    "subtitle": "PropTech · AI Integration · Multilingual Operations",
+    "scroll": "Scroll to explore"
+  },
+  "about": {
+    "label": "About",
+    "heading": "Turning chaos into systems — in four languages.",
+    "text": "Results-driven Executive Assistant with experience across German PropTech and Russian media sectors. Proven track record in building management systems from scratch — KPI automation, Agile adoption, team leadership, and international real estate transactions. Fluent in four languages. Expert in AI-powered workflow optimization.",
+    "photoCaption": "Baden-Württemberg · 2026"
+  },
+  "skills": {
+    "label": "Skills",
+    "heading": "What I bring to the table",
+    "list": [
+      "KPI Automation",
+      "Agile / Trello",
+      "Google Apps Script",
+      "Team Leadership",
+      "Real Estate Transactions (DE)",
+      "CRM Propstack",
+      "EdTech / Learning Suite",
+      "Ghostwriting",
+      "Recruiting",
+      "LiDAR Giraffe 360",
+      "AI Tools",
+      "SMM Leadership",
+      "Travel Management",
+      "SOP Development",
+      "Canva",
+      "Sprengnetter",
+      "Financial Reporting",
+      "Document Management"
+    ]
+  },
+  "experience": {
+    "label": "Experience",
+    "heading": "Professional Journey",
+    "items": [
+      {
+        "period": "January 2026 — Present",
+        "company": "Immokanzlei GmbH",
+        "location": "Baden-Württemberg, Germany",
+        "role": "Executive Business Assistant",
+        "industry": "PropTech / Real Estate",
+        "bullets": [
+          "Designed a KPI system using Google Sheets & Apps Script — fully automated performance tracking",
+          "Migrated company workflows to Trello-based planning (Change Management initiative)",
+          "Built employee motivation framework with measurable efficiency gains",
+          "Drafted custom contractor agreements and SOPs covering every business process",
+          "Co-authored and edited the book «Der Schlüssel» from concept to print",
+          "Built corporate Learning Suite platform: courses, video content, methodology",
+          "Delivered turnkey 2.5-hour webinar: presentation deck and full script",
+          "Documentation support for property purchase deals (Notartermin)",
+          "Professional property valuation using Sprengnetter",
+          "Virtual tours and floor plans via LiDAR Giraffe 360",
+          "Email campaigns to a 6,000-client database in CRM Propstack",
+          "Led a 5-person SMM team",
+          "Full-cycle recruiting via Indeed",
+          "Travel coordination for executive across the EU"
+        ]
+      },
+      {
+        "period": "November 2024 — February 2025",
+        "company": "European Media Group (EMG)",
+        "location": "Moscow, Russia",
+        "role": "Assistant to the Commercial Director",
+        "industry": "Media / Broadcasting",
+        "bullets": [
+          "Administrative support and document management",
+          "Official correspondence in Russian and English",
+          "Financial reporting and expense tracking",
+          "Processing of representational expenses",
+          "Executive travel management"
+        ]
+      },
+      {
+        "period": "June 2022 — October 2024",
+        "company": "Zhukovsky Children's Art School No. 1",
+        "location": "Zhukovsky, Russia",
+        "role": "Administrator",
+        "industry": "Education / Culture",
+        "bullets": [
+          "Managed website and social media for the director",
+          "Coordinated meetings with public officials",
+          "Organized international tours for the «Melodia» choir",
+          "Supported the director's duties as a municipal deputy"
+        ]
+      },
+      {
+        "period": "June — August 2021",
+        "company": "Press Office of the Russian Ministry of Education and Science",
+        "location": "Moscow, Russia",
+        "role": "Intern",
+        "industry": "Public Administration",
+        "bullets": [
+          "Organized inter-agency meetings and contract signings",
+          "Presented the «Priority-2030» program at Skolkovo",
+          "Prepared reports and social media publications"
+        ]
+      }
+    ]
+  },
+  "education": {
+    "label": "Education",
+    "heading": "Academic Foundation",
+    "items": [
+      {
+        "period": "2024 — 2026",
+        "institution": "Higher School of Economics (HSE)",
+        "degree": "MA: Germanica — History and the Present"
+      },
+      {
+        "period": "2020 — 2024",
+        "institution": "Moscow State Linguistic University (MSLU)",
+        "degree": "BA: Political Science"
+      },
+      {
+        "period": "Professional Retraining",
+        "institution": "MSLU",
+        "degree": "Political Scientist with German & English · French Translator"
+      }
+    ],
+    "certificationsLabel": "Certifications",
+    "certifications": [
+      "TEFL Certificate — 200 hours",
+      "B2 French Certificate (MSLU, reg. 21/01.2024-343)"
+    ]
+  },
+  "achievements": {
+    "label": "Achievements",
+    "heading": "By the Numbers",
+    "items": [
+      { "number": "6000", "suffix": "+", "label": "clients in CRM database" },
+      { "number": "4", "suffix": "", "label": "languages" },
+      { "number": "3", "suffix": "", "label": "job markets: RU · DE · US" },
+      { "number": "1", "suffix": "", "label": "book edited and published" }
+    ],
+    "specialLabel": "Special Distinctions",
+    "special": [
+      "Winner of the international project «Ambassadors of the Russian Language Worldwide» (Pushkin Institute) — teaching RFL in Dushanbe (2021)",
+      "Named Scholarship of the Government of Moscow for individual achievements (2022)"
+    ]
+  },
+  "languages": {
+    "label": "Languages",
+    "heading": "Fluent in Four",
+    "items": [
+      { "name": "Russian", "level": "Native", "percent": 100 },
+      { "name": "English", "level": "C1", "percent": 90 },
+      { "name": "German", "level": "B2", "percent": 75 },
+      { "name": "French", "level": "B2", "percent": 75 }
+    ]
+  },
+  "contact": {
+    "label": "Contact",
+    "heading": "Let's talk business",
+    "intro": "Open to opportunities in Germany, Russia, and remote.",
+    "email": "baymakova.ksenya@mail.ru",
+    "phone": "+7 916 127 5862",
+    "cta": "Send me a message",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone"
+  },
+  "download": {
+    "label": "Download Resume",
+    "ru": "🇷🇺 Download PDF (RU)",
+    "de": "🇩🇪 Lebenslauf PDF (DE)",
+    "en": "🇺🇸 Download PDF (EN)"
+  },
+  "footer": {
+    "rights": "All rights reserved"
+  }
+}
