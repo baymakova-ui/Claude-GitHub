@@ -33,8 +33,9 @@
   // ---------- data loading ----------
   async function loadLang(lang) {
     if (dataCache[lang]) return dataCache[lang];
-    const res = await fetch(`data/${lang}.json`, { cache: "no-cache" });
-    if (!res.ok) throw new Error(`Failed to load ${lang}.json`);
+    const url = new URL(`data/${lang}.json`, document.baseURI).href;
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error(`Failed to load ${lang}.json (${res.status})`);
     const json = await res.json();
     dataCache[lang] = json;
     return json;
