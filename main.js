@@ -105,10 +105,6 @@
         }
       });
     });
-
-    // Observe for reveal
-    revealObserver.disconnect && revealObserver.disconnect();
-    setupRevealObserver();
   }
 
   function renderEducation(data) {
@@ -181,14 +177,19 @@
   }
 
   function renderAll(data) {
-    applyTextBindings(data);
-    renderSkills(data);
-    renderTimeline(data);
-    renderEducation(data);
-    renderAchievements(data);
-    renderLanguages(data);
-    renderContact(data);
-    setupRevealObserver();
+    const steps = [
+      ["text", () => applyTextBindings(data)],
+      ["skills", () => renderSkills(data)],
+      ["timeline", () => renderTimeline(data)],
+      ["education", () => renderEducation(data)],
+      ["achievements", () => renderAchievements(data)],
+      ["languages", () => renderLanguages(data)],
+      ["contact", () => renderContact(data)],
+      ["reveal", () => setupRevealObserver()],
+    ];
+    steps.forEach(([name, fn]) => {
+      try { fn(); } catch (err) { console.error(`render error in ${name}:`, err); }
+    });
     startTypewriter(data.hero?.title || "");
   }
 
