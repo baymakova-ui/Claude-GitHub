@@ -118,9 +118,10 @@ const SPALTEN_FORM1 = [
 
 const SPALTEN_FORM2 = [
   'zeitstempel',
-  'vorname', 'nachname', 'email', 'beruf',
-  'bruttoEinkommen', 'nachweisArt', 'unbefristet',
-  'lohnabrechnungenDateien', 'ausweisDatei',
+  'vorname', 'nachname', 'email', 'beruf', 'unbefristet',
+  'zusaetzlicheInfos',
+  'lohnabrechnung1Datei', 'lohnabrechnung2Datei', 'lohnabrechnung3Datei',
+  'ausweisDatei',
   'driveOrdner'
 ];
 
@@ -150,16 +151,22 @@ function doPost(e) {
       // Base64-Inhalte werden NICHT in die Tabelle übernommen.
       try {
         const result = saveFilesToDrive(data);
-        data.lohnabrechnungenDateien = result.lohnUrls.join('\n');
+        data.lohnabrechnung1Datei = result.lohn1Url;
+        data.lohnabrechnung2Datei = result.lohn2Url;
+        data.lohnabrechnung3Datei = result.lohn3Url;
         data.ausweisDatei = result.ausweisUrl;
         data.driveOrdner = result.folderUrl;
       } catch (driveErr) {
         Logger.log('Drive-Upload fehlgeschlagen: ' + driveErr);
-        data.lohnabrechnungenDateien = 'FEHLER: ' + driveErr;
+        data.lohnabrechnung1Datei = 'FEHLER: ' + driveErr;
+        data.lohnabrechnung2Datei = '';
+        data.lohnabrechnung3Datei = '';
         data.ausweisDatei = '';
         data.driveOrdner = '';
       }
-      delete data.lohnabrechnungen;
+      delete data.lohnabrechnung1;
+      delete data.lohnabrechnung2;
+      delete data.lohnabrechnung3;
       delete data.ausweis;
     } else {
       return _jsonResponse({ status: 'error', message: 'Unknown formular type' });
@@ -237,12 +244,15 @@ function _rowToObject(sheet, rowNum, spalten) {
  *  DRIVE_FOLDER_ID an (Name: "[Vorname Nachname] - [Datum]") und
  *  speichert die übergebenen Dateien dort ab.
  *
- *  Erwartet im data-Objekt:
- *      data.lohnabrechnungen  → Array von { filename, mimeType, base64 }
- *      data.ausweis           → Array von { filename, mimeType, base64 } (max. 1)
+ *  Erwartet im data-Objekt jeweils ein einzelnes Datei-Objekt
+ *  (oder null) der Form { filename, mimeType, base64 }:
+ *      data.lohnabrechnung1
+ *      data.lohnabrechnung2
+ *      data.lohnabrechnung3
+ *      data.ausweis
  *
  *  Rückgabe:
- *      { folderUrl, lohnUrls: [url, ...], ausweisUrl: 'url' }
+ *      { folderUrl, lohn1Url, lohn2Url, lohn3Url, ausweisUrl }
  * ═════════════════════════════════════════════════════════════════════ */
 function saveFilesToDrive(data) {
   if (!CONFIG.DRIVE_FOLDER_ID || CONFIG.DRIVE_FOLDER_ID === 'IHRE_GOOGLE_DRIVE_ORDNER_ID') {
@@ -257,28 +267,23 @@ function saveFilesToDrive(data) {
 
   const folder = parent.createFolder(folderName);
 
-  function _saveAll(arr, prefix) {
-    if (!Array.isArray(arr)) return [];
-    return arr.map(function (f, i) {
-      if (!f || !f.base64) return '';
-      const safeName = (f.filename || 'datei').replace(/[\\/:*?"<>|]/g, '_');
-      const blobName = prefix + '_' + (i + 1) + '_' + safeName;
-      const blob = Utilities.newBlob(
-        Utilities.base64Decode(f.base64),
-        f.mimeType || 'application/octet-stream',
-        blobName
-      );
-      return folder.createFile(blob).getUrl();
-    });
+  function _saveOne(f, prefix) {
+    if (!f || !f.base64) return '';
+    const safeName = (f.filename || 'datei').replace(/[\\/:*?"<>|]/g, '_');
+    const blob = Utilities.newBlob(
+      Utilities.base64Decode(f.base64),
+      f.mimeType || 'application/octet-stream',
+      prefix + '_' + safeName
+    );
+    return folder.createFile(blob).getUrl();
   }
-
-  const lohnUrls = _saveAll(data.lohnabrechnungen, 'Lohnabrechnung');
-  const ausweisUrls = _saveAll(data.ausweis, 'Ausweis');
 
   return {
     folderUrl: folder.getUrl(),
-    lohnUrls: lohnUrls,
-    ausweisUrl: ausweisUrls[0] || ''
+    lohn1Url: _saveOne(data.lohnabrechnung1, 'Lohnabrechnung_1'),
+    lohn2Url: _saveOne(data.lohnabrechnung2, 'Lohnabrechnung_2'),
+    lohn3Url: _saveOne(data.lohnabrechnung3, 'Lohnabrechnung_3'),
+    ausweisUrl: _saveOne(data.ausweis, 'Ausweis')
   };
 }
 
@@ -431,11 +436,12 @@ function onForm2Submit(data) {
     nachname: 'Nachname',
     email: 'E-Mail',
     beruf: 'Beruf',
-    bruttoEinkommen: 'Bruttogehalt (€)',
-    nachweisArt: 'Art des Nachweises',
     unbefristet: 'Unbefristet?',
-    lohnabrechnungenDateien: 'Lohnabrechnungen (Drive-Links)',
-    ausweisDatei: 'Ausweis (Drive-Link)',
+    zusaetzlicheInfos: 'Zusätzliche Informationen',
+    lohnabrechnung1Datei: 'Lohnabrechnung 1',
+    lohnabrechnung2Datei: 'Lohnabrechnung 2',
+    lohnabrechnung3Datei: 'Lohnabrechnung 3',
+    ausweisDatei: 'Ausweis',
     driveOrdner: 'Drive-Ordner',
     zeitstempel: 'Eingangszeit'
   };
@@ -484,8 +490,8 @@ function onForm2Submit(data) {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f2ed; border-radius:8px; padding:14px 18px; margin-bottom:24px;">
             <tr><td style="font-size:13px; color:#0d1f3c;">
               <strong>📧 ${_escape(data.email || '–')}</strong><br>
-              <strong>🏠 Einzug ab:</strong> ${_escape(data.einzugstermin || '–')}<br>
-              <strong>💼 Brutto/Monat:</strong> ${_escape(String(data.bruttoEinkommen || '–'))} €
+              <strong>💼 Beruf:</strong> ${_escape(data.beruf || '–')}<br>
+              <strong>📁 Drive-Ordner:</strong> ${data.driveOrdner ? `<a href="${_escape(data.driveOrdner)}" style="color:${CONFIG.COLOR_PRIMARY}; font-weight:600;">öffnen</a>` : '–'}
             </td></tr>
           </table>
 

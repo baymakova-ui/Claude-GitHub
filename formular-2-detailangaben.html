@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Detailangaben · Immokanzlei GmbH</title>
-<meta name="description" content="Formular 2 — Detailangaben & Dokument-Upload zur Wohnungsbewerbung bei der Immokanzlei GmbH." />
+<meta name="description" content="Formular 2 — Persönliche Angaben & Dokument-Upload zur Wohnungsbewerbung bei der Immokanzlei GmbH." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -112,7 +112,7 @@
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), #d8b75c);
-    width: 33%; border-radius: 2px;
+    width: 40%; border-radius: 2px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .step-dots { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
@@ -303,16 +303,6 @@
     cursor: pointer;
   }
 
-  .euro-wrap { position: relative; }
-  .euro-wrap .euro {
-    position: absolute; left: 13px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    font-size: 14.5px; font-weight: 500;
-    pointer-events: none;
-  }
-  .euro-wrap input { padding-left: 28px; }
-
   .err-msg {
     display: none; color: var(--error);
     font-size: 12px; margin-top: 6px; font-weight: 500;
@@ -359,7 +349,7 @@
   .upload-section .upload-sub {
     font-size: 14px;
     color: var(--muted);
-    max-width: 460px;
+    max-width: 480px;
     margin: 0 auto 22px;
     line-height: 1.5;
   }
@@ -651,14 +641,16 @@
 
   <div class="progress-panel">
     <div class="progress-meta">
-      <span id="stepLabel">Schritt 1 von 3</span>
-      <span class="pct" id="pctLabel">33 %</span>
+      <span id="stepLabel">Schritt 1 von 5</span>
+      <span class="pct" id="pctLabel">40 %</span>
     </div>
     <div class="progress-track">
       <div class="progress-fill" id="progressFill"></div>
     </div>
     <div class="step-dots" id="stepDots">
       <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
       <div class="step-dot"></div>
       <div class="step-dot"></div>
     </div>
@@ -668,9 +660,9 @@
 
     <div class="card-header">
       <div class="logo-badge">Detailangaben · Formular 2</div>
-      <div class="step-eyebrow" id="eyebrow">Schritt 1 / 3</div>
-      <h1 id="cardTitle">Einkommensnachweise</h1>
-      <p class="subtitle" id="cardSubtitle">Persönliche Angaben und Informationen zu Ihrem Einkommen.</p>
+      <div class="step-eyebrow" id="eyebrow">Schritt 1 / 5</div>
+      <h1 id="cardTitle">Persönliche Angaben</h1>
+      <p class="subtitle" id="cardSubtitle">Ihre persönlichen Daten und ergänzende Informationen zur Bewerbung.</p>
     </div>
 
     <form id="form2" novalidate>
@@ -708,28 +700,7 @@
               <input type="text" id="beruf" name="beruf" placeholder="z. B. Kaufmann, Ingenieurin, Pflegefachkraft" required />
               <span class="err-msg">Bitte angeben.</span>
             </div>
-            <div class="field">
-              <label class="lbl" for="bruttoEinkommen">Monatl. Bruttogehalt<span class="req">*</span></label>
-              <div class="euro-wrap">
-                <span class="euro">€</span>
-                <input type="number" id="bruttoEinkommen" name="bruttoEinkommen" min="0" required />
-              </div>
-              <span class="err-msg">Bitte angeben.</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="nachweisArt">Art des Einkommensnachweises<span class="req">*</span></label>
-              <select id="nachweisArt" name="nachweisArt" required>
-                <option value="">Bitte auswählen…</option>
-                <option>Gehaltsabrechnungen (letzten 3 Monate)</option>
-                <option>Steuerbescheid</option>
-                <option>Rentenbescheid</option>
-                <option>BAföG-Bescheid</option>
-                <option>Kontoauszüge</option>
-                <option>Sonstiges</option>
-              </select>
-              <span class="err-msg">Bitte auswählen.</span>
-            </div>
-            <div class="field">
+            <div class="field full">
               <label class="lbl">Unbefristetes Arbeitsverhältnis?<span class="req">*</span></label>
               <div class="pills" data-radio="unbefristet">
                 <input type="radio" id="ub-ja" name="unbefristet" value="Ja" />
@@ -739,34 +710,85 @@
               </div>
               <span class="err-msg">Bitte auswählen.</span>
             </div>
+
+            <div class="field full">
+              <label class="lbl" for="zusaetzlicheInfos">Zusätzliche Informationen (optional)</label>
+              <textarea id="zusaetzlicheInfos" name="zusaetzlicheInfos" placeholder="Weitere Angaben, die für Ihre Bewerbung relevant sein könnten…"></textarea>
+            </div>
           </div>
         </div>
 
-        <!-- ───── Step 2: Lohnabrechnungen ───── -->
+        <!-- ───── Step 2: Lohnabrechnung 1 ───── -->
         <div class="step" data-step="2">
           <div class="upload-section">
-            <h3>Lohnabrechnungen (letzte 3 Monate)</h3>
-            <p class="upload-sub">Bitte laden Sie Ihre Lohnabrechnungen der letzten 3 Monate hoch.</p>
+            <h3>Lohnabrechnung (1)</h3>
+            <p class="upload-sub">Bitte fügen Sie die Lohnabrechnungen aller Personen bei, die in die Wohnung einziehen möchten.</p>
 
-            <div class="upload-zone" id="lohnZone">
+            <div class="upload-zone" id="lohn1Zone">
               <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
               <div class="upload-label">Datei auswählen oder hierher ziehen</div>
-              <div class="upload-hint">PDF, JPG oder PNG · mehrere Dateien möglich · max. 10 MB pro Datei</div>
-              <span class="upload-cta">Dateien auswählen</span>
-              <input type="file" id="lohnFiles" name="lohnFiles" accept=".pdf,.jpg,.jpeg,.png" multiple />
+              <div class="upload-hint">PDF, JPG oder PNG · max. 10 MB</div>
+              <span class="upload-cta">Datei auswählen</span>
+              <input type="file" id="lohn1File" name="lohn1File" accept=".pdf,.jpg,.jpeg,.png" />
             </div>
 
-            <div class="file-list" id="lohnList"></div>
-            <span class="upload-err" id="lohnErr">Bitte laden Sie mindestens eine Datei hoch.</span>
+            <div class="file-list" id="lohn1List"></div>
+            <span class="upload-err" id="lohn1Err">Bitte laden Sie die erste Lohnabrechnung hoch.</span>
           </div>
         </div>
 
-        <!-- ───── Step 3: Ausweis ───── -->
+        <!-- ───── Step 3: Lohnabrechnung 2 ───── -->
         <div class="step" data-step="3">
+          <div class="upload-section">
+            <h3>Lohnabrechnung (2)</h3>
+            <p class="upload-sub">Bitte fügen Sie die Lohnabrechnungen aller Personen bei, die in die Wohnung einziehen möchten.</p>
+
+            <div class="upload-zone" id="lohn2Zone">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div class="upload-label">Datei auswählen oder hierher ziehen</div>
+              <div class="upload-hint">PDF, JPG oder PNG · max. 10 MB</div>
+              <span class="upload-cta">Datei auswählen</span>
+              <input type="file" id="lohn2File" name="lohn2File" accept=".pdf,.jpg,.jpeg,.png" />
+            </div>
+
+            <div class="file-list" id="lohn2List"></div>
+            <span class="upload-err" id="lohn2Err">Bitte laden Sie die zweite Lohnabrechnung hoch.</span>
+          </div>
+        </div>
+
+        <!-- ───── Step 4: Lohnabrechnung 3 ───── -->
+        <div class="step" data-step="4">
+          <div class="upload-section">
+            <h3>Lohnabrechnung (3)</h3>
+            <p class="upload-sub">Bitte fügen Sie die Lohnabrechnungen aller Personen bei, die in die Wohnung einziehen möchten.</p>
+
+            <div class="upload-zone" id="lohn3Zone">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div class="upload-label">Datei auswählen oder hierher ziehen</div>
+              <div class="upload-hint">PDF, JPG oder PNG · max. 10 MB</div>
+              <span class="upload-cta">Datei auswählen</span>
+              <input type="file" id="lohn3File" name="lohn3File" accept=".pdf,.jpg,.jpeg,.png" />
+            </div>
+
+            <div class="file-list" id="lohn3List"></div>
+            <span class="upload-err" id="lohn3Err">Bitte laden Sie die dritte Lohnabrechnung hoch.</span>
+          </div>
+        </div>
+
+        <!-- ───── Step 5: Ausweis ───── -->
+        <div class="step" data-step="5">
           <div class="upload-section">
             <h3>Gültiger Ausweis</h3>
             <p class="upload-sub">Bitte laden Sie ein Foto oder Scan Ihres Personalausweises oder Reisepasses hoch.</p>
@@ -780,13 +802,13 @@
                 <line x1="15" y1="13" x2="18" y2="13"></line>
               </svg>
               <div class="upload-label">Datei auswählen oder hierher ziehen</div>
-              <div class="upload-hint">PDF, JPG oder PNG · eine Datei · max. 10 MB</div>
+              <div class="upload-hint">PDF, JPG oder PNG · max. 10 MB</div>
               <span class="upload-cta">Datei auswählen</span>
               <input type="file" id="ausweisFile" name="ausweisFile" accept=".pdf,.jpg,.jpeg,.png" />
             </div>
 
             <div class="file-list" id="ausweisList"></div>
-            <span class="upload-err" id="ausweisErr">Bitte laden Sie eine Datei hoch.</span>
+            <span class="upload-err" id="ausweisErr">Bitte laden Sie Ihren Ausweis hoch.</span>
           </div>
         </div>
 
@@ -838,20 +860,29 @@
 
 <script>
   const GAS_URL = 'IHRE_GOOGLE_APPS_SCRIPT_URL_HIER';
-  const TOTAL_STEPS = 3;
+  const TOTAL_STEPS = 5;
   const STEP_META = {
-    1: { title: 'Einkommensnachweise', subtitle: 'Persönliche Angaben und Informationen zu Ihrem Einkommen.' },
-    2: { title: 'Lohnabrechnungen hochladen', subtitle: 'Bitte laden Sie Ihre Lohnabrechnungen der letzten 3 Monate hoch.' },
-    3: { title: 'Ausweis hochladen', subtitle: 'Bitte laden Sie ein Foto oder Scan Ihres Personalausweises oder Reisepasses hoch.' }
+    1: { title: 'Persönliche Angaben', subtitle: 'Ihre persönlichen Daten und ergänzende Informationen zur Bewerbung.' },
+    2: { title: 'Lohnabrechnung (1)', subtitle: 'Bitte fügen Sie die Lohnabrechnungen aller Personen bei, die in die Wohnung einziehen möchten.' },
+    3: { title: 'Lohnabrechnung (2)', subtitle: 'Bitte fügen Sie die Lohnabrechnungen aller Personen bei, die in die Wohnung einziehen möchten.' },
+    4: { title: 'Lohnabrechnung (3)', subtitle: 'Bitte fügen Sie die Lohnabrechnungen aller Personen bei, die in die Wohnung einziehen möchten.' },
+    5: { title: 'Gültiger Ausweis', subtitle: 'Bitte laden Sie ein Foto oder Scan Ihres Personalausweises oder Reisepasses hoch.' }
   };
 
   const REQUIRED = {
-    1: ['vorname', 'nachname', 'email', 'beruf', 'bruttoEinkommen', 'nachweisArt', 'unbefristet'],
-    2: [],
-    3: []
+    1: ['vorname', 'nachname', 'email', 'beruf', 'unbefristet'],
+    2: [], 3: [], 4: [], 5: []
   };
 
   const RADIO_FIELDS = ['unbefristet'];
+
+  // Upload step config — all four upload steps share the same shape.
+  const UPLOADS = [
+    { stepNum: 2, inputId: 'lohn1File',   listId: 'lohn1List',   zoneId: 'lohn1Zone',   errId: 'lohn1Err',   dataKey: 'lohnabrechnung1' },
+    { stepNum: 3, inputId: 'lohn2File',   listId: 'lohn2List',   zoneId: 'lohn2Zone',   errId: 'lohn2Err',   dataKey: 'lohnabrechnung2' },
+    { stepNum: 4, inputId: 'lohn3File',   listId: 'lohn3List',   zoneId: 'lohn3Zone',   errId: 'lohn3Err',   dataKey: 'lohnabrechnung3' },
+    { stepNum: 5, inputId: 'ausweisFile', listId: 'ausweisList', zoneId: 'ausweisZone', errId: 'ausweisErr', dataKey: 'ausweis' }
+  ];
 
   let currentStep = 1;
 
@@ -870,11 +901,11 @@
   const successState = document.getElementById('successState');
 
   // ───── File upload handling ─────
-  function setupUpload(inputId, listId, zoneId) {
-    const input = document.getElementById(inputId);
-    const list = document.getElementById(listId);
-    const zone = document.getElementById(zoneId);
-    const errEl = document.getElementById(inputId === 'lohnFiles' ? 'lohnErr' : 'ausweisErr');
+  function setupUpload(cfg) {
+    const input = document.getElementById(cfg.inputId);
+    const list = document.getElementById(cfg.listId);
+    const zone = document.getElementById(cfg.zoneId);
+    const errEl = document.getElementById(cfg.errId);
 
     input.addEventListener('change', () => renderList(input, list, zone, errEl));
 
@@ -913,8 +944,7 @@
     });
   }
 
-  setupUpload('lohnFiles', 'lohnList', 'lohnZone');
-  setupUpload('ausweisFile', 'ausweisList', 'ausweisZone');
+  UPLOADS.forEach(setupUpload);
 
   // ───── Clear errors on input ─────
   form.addEventListener('input', e => {
@@ -940,30 +970,22 @@
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function validateStep(stepNum) {
+    // File-upload steps
+    const upload = UPLOADS.find(u => u.stepNum === stepNum);
+    if (upload) {
+      const input = document.getElementById(upload.inputId);
+      if (!input.files || !input.files.length) {
+        document.getElementById(upload.errId).classList.add('v');
+        document.getElementById(upload.zoneId).classList.add('upload-err-state');
+        return false;
+      }
+      return true;
+    }
+
     let valid = true;
     let firstErr = null;
-
-    // File-upload steps
-    if (stepNum === 2) {
-      const input = document.getElementById('lohnFiles');
-      if (!input.files || !input.files.length) {
-        document.getElementById('lohnErr').classList.add('v');
-        document.getElementById('lohnZone').classList.add('upload-err-state');
-        return false;
-      }
-      return true;
-    }
-    if (stepNum === 3) {
-      const input = document.getElementById('ausweisFile');
-      if (!input.files || !input.files.length) {
-        document.getElementById('ausweisErr').classList.add('v');
-        document.getElementById('ausweisZone').classList.add('upload-err-state');
-        return false;
-      }
-      return true;
-    }
-
     const required = REQUIRED[stepNum] || [];
+
     required.forEach(name => {
       if (RADIO_FIELDS.includes(name)) {
         const checked = form.querySelector(`input[name="${name}"]:checked`);
@@ -1023,7 +1045,7 @@
     cardSubtitle.textContent = meta.subtitle;
     eyebrow.textContent = `Schritt ${currentStep} / ${TOTAL_STEPS}`;
     stepLabel.textContent = `Schritt ${currentStep} von ${TOTAL_STEPS}`;
-    const pct = Math.round((currentStep / TOTAL_STEPS) * 100);
+    const pct = Math.min(100, Math.round(((currentStep + 1) / TOTAL_STEPS) * 100));
     pctLabel.textContent = pct + ' %';
     progressFill.style.width = pct + '%';
 
@@ -1078,10 +1100,10 @@
       out[k] = typeof v === 'string' ? v.trim() : v;
     }
 
-    const lohnInput = document.getElementById('lohnFiles');
-    const ausweisInput = document.getElementById('ausweisFile');
-    out.lohnabrechnungen = await Promise.all([...lohnInput.files].map(fileToBase64));
-    out.ausweis = ausweisInput.files[0] ? [await fileToBase64(ausweisInput.files[0])] : [];
+    for (const cfg of UPLOADS) {
+      const input = document.getElementById(cfg.inputId);
+      out[cfg.dataKey] = input.files[0] ? await fileToBase64(input.files[0]) : null;
+    }
 
     return out;
   }
