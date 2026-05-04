@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Detailangaben · Immokanzlei GmbH</title>
-<meta name="description" content="Formular 2 — Detailangaben zur Wohnungsbewerbung bei der Immokanzlei GmbH." />
+<meta name="description" content="Formular 2 — Detailangaben & Dokument-Upload zur Wohnungsbewerbung bei der Immokanzlei GmbH." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -61,15 +61,12 @@
     pointer-events: none;
   }
 
-  .page-shell {
-    width: 100%;
-    max-width: 720px;
-    margin: 0 auto;
-  }
+  .page-shell { width: 100%; max-width: 720px; margin: 0 auto; }
 
   .brand-bar { text-align: center; margin-bottom: 22px; }
   .brand-bar img {
     height: 64px; width: auto;
+    filter: brightness(0);
     opacity: 0.96;
   }
 
@@ -115,7 +112,7 @@
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), #d8b75c);
-    width: 25%; border-radius: 2px;
+    width: 33%; border-radius: 2px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .step-dots { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
@@ -250,43 +247,22 @@
     grid-column: 1 / -1;
     background: var(--accent-bg);
     border-left: 3px solid var(--accent);
-    padding: 13px 16px;
+    padding: 14px 18px;
     border-radius: 6px;
     color: var(--primary);
-    font-size: 13px;
-    line-height: 1.55;
+    font-size: 13.5px;
+    line-height: 1.6;
     margin-bottom: 4px;
   }
-  .step-info a { color: var(--primary); font-weight: 600; }
-
-  /* Document upload hint box */
-  .doc-hint {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    border: 1.5px dashed var(--border);
-    background: var(--accent-bg);
-    border-radius: 10px;
-    padding: 16px 18px;
-    margin-bottom: 4px;
+  .step-info strong { font-weight: 700; }
+  .step-info ol {
+    margin: 8px 0 0 22px;
+    padding: 0;
   }
-  .doc-hint .doc-icon {
-    flex-shrink: 0;
-    width: 38px; height: 38px;
-    border-radius: 8px;
-    background: rgba(201, 168, 76, 0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .step-info ol li {
+    margin: 3px 0;
+    font-weight: 500;
   }
-  .doc-hint .doc-text {
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--primary);
-  }
-  .doc-hint .doc-text strong { font-weight: 700; }
-  .doc-hint a { color: var(--primary); font-weight: 600; }
 
   input[type="text"],
   input[type="email"],
@@ -369,77 +345,138 @@
     box-shadow: 0 0 0 3px var(--accent-light);
   }
 
-  /* Chip selector */
-  .chips {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+  /* ───── Upload Zone ───── */
+  .upload-section {
+    text-align: center;
   }
-  .chips .chip {
-    border: 1.5px solid var(--border);
-    background: var(--white);
-    color: var(--primary);
-    padding: 9px 18px;
-    border-radius: 30px;
-    font-size: 13px;
+  .upload-section h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 26px;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
+    color: var(--primary);
+    margin-bottom: 6px;
   }
-  .chips .chip:hover {
-    border-color: var(--accent);
+  .upload-section .upload-sub {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 460px;
+    margin: 0 auto 22px;
+    line-height: 1.5;
+  }
+
+  .upload-zone {
+    position: relative;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 44px 24px;
+    text-align: center;
     background: var(--accent-bg);
-  }
-  .chips .chip.selected {
-    background: var(--primary);
-    color: var(--white);
-    border-color: var(--primary);
-  }
-
-  .cond {
-    max-height: 0; overflow: hidden; opacity: 0;
-    margin-bottom: 0;
-    transition: max-height 0.3s ease, opacity 0.3s ease, margin-bottom 0.3s ease;
-  }
-  .cond.open {
-    max-height: 240px; opacity: 1; margin-bottom: 18px;
-  }
-
-  .divider {
-    grid-column: 1 / -1;
-    border-top: 1px solid var(--border);
-    margin: 6px 0;
-  }
-
-  .check-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 14px;
-    padding: 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
     transition: all 0.2s;
     cursor: pointer;
   }
-  .check-row:hover { border-color: var(--accent); background: var(--accent-bg); }
-  .check-row input[type="checkbox"] {
-    width: 18px; height: 18px;
-    accent-color: var(--accent);
+  .upload-zone:hover,
+  .upload-zone.drag {
+    border-color: var(--accent);
+    background: rgba(201, 168, 76, 0.10);
+  }
+  .upload-zone.has-files {
+    border-style: solid;
+    border-color: var(--accent);
+    background: rgba(201, 168, 76, 0.08);
+  }
+  .upload-zone.upload-err-state {
+    border-color: var(--error);
+    background: rgba(192, 57, 43, 0.05);
+  }
+  .upload-zone svg.upload-icon {
+    width: 44px; height: 44px;
+    color: var(--accent);
+    margin-bottom: 14px;
+    pointer-events: none;
+  }
+  .upload-zone .upload-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 6px;
+    pointer-events: none;
+  }
+  .upload-zone .upload-hint {
+    font-size: 12.5px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .upload-zone .upload-cta {
+    display: inline-block;
+    margin-top: 14px;
+    background: var(--accent);
+    color: var(--primary);
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
     cursor: pointer;
-    margin-top: 2px;
+  }
+
+  .file-list {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+  }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--primary);
+    animation: fadeUp 0.25s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .file-item .file-icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    background: var(--accent-bg);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
+  .file-item .file-name {
+    flex: 1;
+    font-weight: 500;
+    word-break: break-all;
+  }
+  .file-item .file-size {
+    color: var(--muted);
+    font-size: 12px;
     flex-shrink: 0;
   }
-  .check-row label {
-    font-size: 13px; line-height: 1.5;
-    color: var(--primary);
-    cursor: pointer; flex: 1;
+  .upload-err {
+    display: none;
+    color: var(--error);
+    font-size: 12.5px;
+    margin-top: 10px;
+    font-weight: 500;
+    text-align: center;
   }
-  .check-row.err-state {
-    border-color: var(--error);
-    box-shadow: 0 0 0 3px var(--error-light);
-  }
+  .upload-err.v { display: block; }
 
   /* Nav */
   .nav-bar {
@@ -595,6 +632,8 @@
     .progress-panel { padding: 14px 16px; }
     .info-banner { padding: 12px 14px; font-size: 13px; }
     .success-state h2 { font-size: 30px; }
+    .upload-section h3 { font-size: 22px; }
+    .upload-zone { padding: 32px 18px; }
   }
 </style>
 </head>
@@ -612,15 +651,14 @@
 
   <div class="progress-panel">
     <div class="progress-meta">
-      <span id="stepLabel">Schritt 1 von 4</span>
-      <span class="pct" id="pctLabel">25 %</span>
+      <span id="stepLabel">Schritt 1 von 3</span>
+      <span class="pct" id="pctLabel">33 %</span>
     </div>
     <div class="progress-track">
       <div class="progress-fill" id="progressFill"></div>
     </div>
     <div class="step-dots" id="stepDots">
       <div class="step-dot active"></div>
-      <div class="step-dot"></div>
       <div class="step-dot"></div>
       <div class="step-dot"></div>
     </div>
@@ -630,9 +668,9 @@
 
     <div class="card-header">
       <div class="logo-badge">Detailangaben · Formular 2</div>
-      <div class="step-eyebrow" id="eyebrow">Schritt 1 / 4</div>
+      <div class="step-eyebrow" id="eyebrow">Schritt 1 / 3</div>
       <h1 id="cardTitle">Einkommensnachweise</h1>
-      <p class="subtitle" id="cardSubtitle">Details zu Ihrem Einkommen und den verfügbaren Nachweisen.</p>
+      <p class="subtitle" id="cardSubtitle">Persönliche Angaben und Informationen zu Ihrem Einkommen.</p>
     </div>
 
     <form id="form2" novalidate>
@@ -643,7 +681,11 @@
         <div class="step active" data-step="1">
           <div class="grid">
             <div class="step-info">
-              Bitte geben Sie genaue Angaben zu Ihrem Einkommen an. Nachweise können beim Besichtigungstermin mitgebracht oder vorab per E-Mail an <a href="mailto:info@immokanzlei24.de">info@immokanzlei24.de</a> eingereicht werden.
+              <strong>Vielen Dank für Ihr Interesse!</strong> Bitte laden Sie innerhalb von 24 Stunden folgende Unterlagen hoch:
+              <ol>
+                <li>Lohnabrechnungen (letzte 3 Monate)</li>
+                <li>Gültiger Ausweis</li>
+              </ol>
             </div>
 
             <div class="field">
@@ -660,6 +702,11 @@
               <label class="lbl" for="email">E-Mail<span class="req">*</span></label>
               <input type="email" id="email" name="email" autocomplete="email" required />
               <span class="err-msg">Bitte gültige E-Mail angeben.</span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="beruf">Beruf<span class="req">*</span></label>
+              <input type="text" id="beruf" name="beruf" placeholder="z. B. Kaufmann, Ingenieurin, Pflegefachkraft" required />
+              <span class="err-msg">Bitte angeben.</span>
             </div>
             <div class="field">
               <label class="lbl" for="bruttoEinkommen">Monatl. Bruttogehalt<span class="req">*</span></label>
@@ -692,201 +739,54 @@
               </div>
               <span class="err-msg">Bitte auswählen.</span>
             </div>
-            <div class="field">
-              <label class="lbl">Nachweise können vorgelegt werden?</label>
-              <div class="pills" data-radio="nachweiseVerfuegbar">
-                <input type="radio" id="nv-ja" name="nachweiseVerfuegbar" value="Ja" />
-                <label for="nv-ja">Ja</label>
-                <input type="radio" id="nv-nein" name="nachweiseVerfuegbar" value="Nein" />
-                <label for="nv-nein">Nein</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl" for="nachweiseAb">Nachweise verfügbar ab</label>
-              <input type="date" id="nachweiseAb" name="nachweiseAb" />
-            </div>
           </div>
         </div>
 
-        <!-- ───── Step 2 ───── -->
+        <!-- ───── Step 2: Lohnabrechnungen ───── -->
         <div class="step" data-step="2">
-          <div class="grid">
-            <div class="field">
-              <label class="lbl">Laufende Kredite/Verbindlichkeiten?</label>
-              <div class="pills" data-radio="kredite">
-                <input type="radio" id="kr-nein" name="kredite" value="Nein" />
-                <label for="kr-nein">Nein</label>
-                <input type="radio" id="kr-ja" name="kredite" value="Ja" />
-                <label for="kr-ja">Ja</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl">Eigenkapital / Rücklage vorhanden?</label>
-              <div class="pills" data-radio="eigenkapital">
-                <input type="radio" id="ek-ja" name="eigenkapital" value="Ja" />
-                <label for="ek-ja">Ja</label>
-                <input type="radio" id="ek-nein" name="eigenkapital" value="Nein" />
-                <label for="ek-nein">Nein</label>
-              </div>
+          <div class="upload-section">
+            <h3>Lohnabrechnungen (letzte 3 Monate)</h3>
+            <p class="upload-sub">Bitte laden Sie Ihre Lohnabrechnungen der letzten 3 Monate hoch.</p>
+
+            <div class="upload-zone" id="lohnZone">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div class="upload-label">Datei auswählen oder hierher ziehen</div>
+              <div class="upload-hint">PDF, JPG oder PNG · mehrere Dateien möglich · max. 10 MB pro Datei</div>
+              <span class="upload-cta">Dateien auswählen</span>
+              <input type="file" id="lohnFiles" name="lohnFiles" accept=".pdf,.jpg,.jpeg,.png" multiple />
             </div>
 
-            <div class="full cond" id="cond-kredite">
-              <div class="field">
-                <label class="lbl" for="kreditrate">Monatl. Kreditrate</label>
-                <div class="euro-wrap">
-                  <span class="euro">€</span>
-                  <input type="number" id="kreditrate" name="kreditrate" min="0" />
-                </div>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="lbl">Kontoauszüge können vorgelegt werden?</label>
-              <div class="pills" data-radio="kontoauszuege">
-                <input type="radio" id="ka-ja" name="kontoauszuege" value="Ja" />
-                <label for="ka-ja">Ja</label>
-                <input type="radio" id="ka-nein" name="kontoauszuege" value="Nein" />
-                <label for="ka-nein">Nein</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl" for="hausbank">Hausbank</label>
-              <input type="text" id="hausbank" name="hausbank" placeholder="z. B. Sparkasse Offenburg" />
-            </div>
-            <div class="field">
-              <label class="lbl">SEPA-Lastschrift für Miete möglich?</label>
-              <div class="pills" data-radio="sepa">
-                <input type="radio" id="sp-ja" name="sepa" value="Ja" />
-                <label for="sp-ja">Ja</label>
-                <input type="radio" id="sp-nein" name="sepa" value="Nein" />
-                <label for="sp-nein">Nein</label>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="field full">
-              <label class="lbl">Selbsteinschätzung Bonität</label>
-              <div class="chips" id="bonitaetChips" data-name="bonitaet">
-                <div class="chip" data-value="Sehr gut">Sehr gut</div>
-                <div class="chip" data-value="Gut">Gut</div>
-                <div class="chip" data-value="Befriedigend">Befriedigend</div>
-                <div class="chip" data-value="Ausreichend">Ausreichend</div>
-              </div>
-              <input type="hidden" id="bonitaet" name="bonitaet" value="" />
-              <span class="hint">Optionale Selbsteinschätzung</span>
-            </div>
+            <div class="file-list" id="lohnList"></div>
+            <span class="upload-err" id="lohnErr">Bitte laden Sie mindestens eine Datei hoch.</span>
           </div>
         </div>
 
-        <!-- ───── Step 3 ───── -->
+        <!-- ───── Step 3: Ausweis ───── -->
         <div class="step" data-step="3">
-          <div class="grid">
+          <div class="upload-section">
+            <h3>Gültiger Ausweis</h3>
+            <p class="upload-sub">Bitte laden Sie ein Foto oder Scan Ihres Personalausweises oder Reisepasses hoch.</p>
 
-            <div class="doc-hint">
-              <div class="doc-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="8" y1="13" x2="16" y2="13"></line>
-                  <line x1="8" y1="17" x2="14" y2="17"></line>
-                </svg>
-              </div>
-              <div class="doc-text">
-                <strong>Referenzschreiben</strong> — Falls vorhanden, können Sie es beim Besichtigungstermin mitbringen oder an <a href="mailto:info@immokanzlei24.de">info@immokanzlei24.de</a> senden.
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="lbl" for="vermieterName">Vermieter Name<span class="req">*</span></label>
-              <input type="text" id="vermieterName" name="vermieterName" required />
-              <span class="err-msg">Bitte angeben.</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="vermieterKontakt">Vermieter Kontakt<span class="req">*</span></label>
-              <input type="text" id="vermieterKontakt" name="vermieterKontakt" placeholder="Telefon oder E-Mail" required />
-              <span class="err-msg">Bitte angeben.</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="mietdauerVermieter">Mietdauer bei diesem Vermieter</label>
-              <input type="text" id="mietdauerVermieter" name="mietdauerVermieter" placeholder="z. B. 3 Jahre" />
-            </div>
-            <div class="field">
-              <label class="lbl">Miete stets pünktlich bezahlt?</label>
-              <div class="pills" data-radio="puenktlich">
-                <input type="radio" id="pk-ja" name="puenktlich" value="Ja" />
-                <label for="pk-ja">Ja</label>
-                <input type="radio" id="pk-nein" name="puenktlich" value="Nein" />
-                <label for="pk-nein">Nein</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl">Referenzschreiben liegt vor?</label>
-              <div class="pills" data-radio="referenzschreiben">
-                <input type="radio" id="rs-ja" name="referenzschreiben" value="Ja" />
-                <label for="rs-ja">Ja</label>
-                <input type="radio" id="rs-nein" name="referenzschreiben" value="Nein" />
-                <label for="rs-nein">Nein</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl">Vermieter kann kontaktiert werden?</label>
-              <div class="pills" data-radio="vermieterKontaktOK">
-                <input type="radio" id="vk-ja" name="vermieterKontaktOK" value="Ja" />
-                <label for="vk-ja">Ja</label>
-                <input type="radio" id="vk-nein" name="vermieterKontaktOK" value="Nein" />
-                <label for="vk-nein">Nein</label>
-              </div>
-            </div>
-            <div class="field full">
-              <label class="lbl" for="vermieterAnmerkungen">Besondere Vorkommnisse / Anmerkungen zum Mietverhältnis</label>
-              <textarea id="vermieterAnmerkungen" name="vermieterAnmerkungen"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- ───── Step 4 ───── -->
-        <div class="step" data-step="4">
-          <div class="grid">
-            <div class="field">
-              <label class="lbl">Können Sie einen Bürgen stellen?</label>
-              <div class="pills" data-radio="buerge">
-                <input type="radio" id="bg-ja" name="buerge" value="Ja" />
-                <label for="bg-ja">Ja</label>
-                <input type="radio" id="bg-nein" name="buerge" value="Nein" />
-                <label for="bg-nein">Nein</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl" for="einzugstermin">Frühestmöglicher Einzugstermin<span class="req">*</span></label>
-              <input type="date" id="einzugstermin" name="einzugstermin" required />
-              <span class="err-msg">Bitte angeben.</span>
+            <div class="upload-zone" id="ausweisZone">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+                <circle cx="9" cy="11" r="2"></circle>
+                <path d="M5 17c1.5-2 3-3 4-3s2.5 1 4 3"></path>
+                <line x1="15" y1="10" x2="19" y2="10"></line>
+                <line x1="15" y1="13" x2="18" y2="13"></line>
+              </svg>
+              <div class="upload-label">Datei auswählen oder hierher ziehen</div>
+              <div class="upload-hint">PDF, JPG oder PNG · eine Datei · max. 10 MB</div>
+              <span class="upload-cta">Datei auswählen</span>
+              <input type="file" id="ausweisFile" name="ausweisFile" accept=".pdf,.jpg,.jpeg,.png" />
             </div>
 
-            <div class="full cond" id="cond-buerge">
-              <div class="field">
-                <label class="lbl" for="buergeDetail">Bürge Name + Kontakt</label>
-                <input type="text" id="buergeDetail" name="buergeDetail" placeholder="Name, Telefon oder E-Mail" />
-              </div>
-            </div>
-
-            <div class="field full">
-              <label class="lbl" for="persoenlicheUmstaende">Besondere persönliche Umstände / Anmerkungen</label>
-              <textarea id="persoenlicheUmstaende" name="persoenlicheUmstaende" placeholder="Was möchten Sie uns noch mitteilen?"></textarea>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="full">
-              <div class="check-row" data-check="bestaetigung2">
-                <input type="checkbox" id="bestaetigung2" name="bestaetigung2" required />
-                <label for="bestaetigung2">Ich bestätige die Richtigkeit aller Angaben in Formular 1 und Formular 2. Ich bin einverstanden, dass die Immokanzlei GmbH meine Bonität prüfen und Referenzen einholen darf. <span style="color:var(--accent);">*</span></label>
-              </div>
-              <div class="check-row" data-check="datenschutz2">
-                <input type="checkbox" id="datenschutz2" name="datenschutz2" required />
-                <label for="datenschutz2">Ich habe die <a href="https://immokanzlei24.de/datenschutzerklaerung/" target="_blank" rel="noopener" style="color:var(--accent); font-weight:600; text-decoration:none;">Datenschutzerklärung</a> gelesen und stimme der Verarbeitung meiner Daten für die Wohnungsbewerbung zu. <span style="color:var(--accent);">*</span></label>
-              </div>
-            </div>
+            <div class="file-list" id="ausweisList"></div>
+            <span class="upload-err" id="ausweisErr">Bitte laden Sie eine Datei hoch.</span>
           </div>
         </div>
 
@@ -938,22 +838,20 @@
 
 <script>
   const GAS_URL = 'IHRE_GOOGLE_APPS_SCRIPT_URL_HIER';
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 3;
   const STEP_META = {
-    1: { title: 'Einkommensnachweise', subtitle: 'Details zu Ihrem Einkommen und den verfügbaren Nachweisen.' },
-    2: { title: 'Finanzielle Situation', subtitle: 'Angaben zu bestehenden Verpflichtungen und Ihrer Bonität.' },
-    3: { title: 'Vermieterreferenz', subtitle: 'Informationen zu Ihrem aktuellen oder letzten Vermieter.' },
-    4: { title: 'Abschluss & Einverständnis', subtitle: 'Letzte Details und Ihre rechtliche Bestätigung.' }
+    1: { title: 'Einkommensnachweise', subtitle: 'Persönliche Angaben und Informationen zu Ihrem Einkommen.' },
+    2: { title: 'Lohnabrechnungen hochladen', subtitle: 'Bitte laden Sie Ihre Lohnabrechnungen der letzten 3 Monate hoch.' },
+    3: { title: 'Ausweis hochladen', subtitle: 'Bitte laden Sie ein Foto oder Scan Ihres Personalausweises oder Reisepasses hoch.' }
   };
 
   const REQUIRED = {
-    1: ['vorname', 'nachname', 'email', 'bruttoEinkommen', 'nachweisArt', 'unbefristet'],
+    1: ['vorname', 'nachname', 'email', 'beruf', 'bruttoEinkommen', 'nachweisArt', 'unbefristet'],
     2: [],
-    3: ['vermieterName', 'vermieterKontakt'],
-    4: ['einzugstermin', 'bestaetigung2', 'datenschutz2']
+    3: []
   };
 
-  const RADIO_FIELDS = ['unbefristet', 'nachweiseVerfuegbar', 'kredite', 'eigenkapital', 'kontoauszuege', 'sepa', 'puenktlich', 'referenzschreiben', 'vermieterKontaktOK', 'buerge'];
+  const RADIO_FIELDS = ['unbefristet'];
 
   let currentStep = 1;
 
@@ -971,35 +869,57 @@
   const navBar = document.getElementById('navBar');
   const successState = document.getElementById('successState');
 
-  // Conditional fields
-  function setupConditional(radioName, condId) {
-    const inputs = form.querySelectorAll(`input[name="${radioName}"]`);
-    const cond = document.getElementById(condId);
-    inputs.forEach(inp => {
-      inp.addEventListener('change', () => {
-        if (inp.checked && inp.value === 'Ja') cond.classList.add('open');
-        else if (inp.checked) cond.classList.remove('open');
-      });
+  // ───── File upload handling ─────
+  function setupUpload(inputId, listId, zoneId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    const zone = document.getElementById(zoneId);
+    const errEl = document.getElementById(inputId === 'lohnFiles' ? 'lohnErr' : 'ausweisErr');
+
+    input.addEventListener('change', () => renderList(input, list, zone, errEl));
+
+    ['dragenter', 'dragover'].forEach(ev =>
+      zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('drag'); })
+    );
+    ['dragleave', 'drop'].forEach(ev =>
+      zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('drag'); })
+    );
+  }
+
+  function renderList(input, list, zone, errEl) {
+    list.innerHTML = '';
+    if (!input.files || !input.files.length) {
+      zone.classList.remove('has-files');
+      return;
+    }
+    zone.classList.add('has-files');
+    zone.classList.remove('upload-err-state');
+    if (errEl) errEl.classList.remove('v');
+
+    [...input.files].forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'file-item';
+      const sizeKB = f.size / 1024;
+      const sizeStr = sizeKB > 1024 ? (sizeKB / 1024).toFixed(2) + ' MB' : sizeKB.toFixed(1) + ' KB';
+      div.innerHTML =
+        '<span class="file-icon">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
+        '</span>' +
+        '<span class="file-name"></span>' +
+        '<span class="file-size"></span>';
+      div.querySelector('.file-name').textContent = f.name;
+      div.querySelector('.file-size').textContent = sizeStr;
+      list.appendChild(div);
     });
   }
-  setupConditional('kredite', 'cond-kredite');
-  setupConditional('buerge', 'cond-buerge');
 
-  // Chip selector
-  const chipBox = document.getElementById('bonitaetChips');
-  const bonitaetInput = document.getElementById('bonitaet');
-  chipBox.addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    chipBox.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-    chip.classList.add('selected');
-    bonitaetInput.value = chip.dataset.value;
-  });
+  setupUpload('lohnFiles', 'lohnList', 'lohnZone');
+  setupUpload('ausweisFile', 'ausweisList', 'ausweisZone');
 
-  // Clear errors
+  // ───── Clear errors on input ─────
   form.addEventListener('input', e => {
     const t = e.target;
-    if (t.matches('input, select, textarea')) {
+    if (t.matches('input, select, textarea') && t.type !== 'file') {
       t.classList.remove('err');
       const msg = t.parentElement.querySelector('.err-msg');
       if (msg) msg.classList.remove('v');
@@ -1014,19 +934,36 @@
         if (msg) msg.classList.remove('v');
       }
     }
-    if (t.type === 'checkbox') {
-      const row = t.closest('.check-row');
-      if (row) row.classList.remove('err-state');
-    }
   });
 
+  // ───── Validation ─────
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function validateStep(stepNum) {
-    const required = REQUIRED[stepNum] || [];
     let valid = true;
     let firstErr = null;
 
+    // File-upload steps
+    if (stepNum === 2) {
+      const input = document.getElementById('lohnFiles');
+      if (!input.files || !input.files.length) {
+        document.getElementById('lohnErr').classList.add('v');
+        document.getElementById('lohnZone').classList.add('upload-err-state');
+        return false;
+      }
+      return true;
+    }
+    if (stepNum === 3) {
+      const input = document.getElementById('ausweisFile');
+      if (!input.files || !input.files.length) {
+        document.getElementById('ausweisErr').classList.add('v');
+        document.getElementById('ausweisZone').classList.add('upload-err-state');
+        return false;
+      }
+      return true;
+    }
+
+    const required = REQUIRED[stepNum] || [];
     required.forEach(name => {
       if (RADIO_FIELDS.includes(name)) {
         const checked = form.querySelector(`input[name="${name}"]:checked`);
@@ -1041,14 +978,6 @@
       }
       const el = form.querySelector(`[name="${name}"]`);
       if (!el) return;
-      if (el.type === 'checkbox') {
-        if (!el.checked) {
-          el.closest('.check-row').classList.add('err-state');
-          if (!firstErr) firstErr = el;
-          valid = false;
-        }
-        return;
-      }
       const v = (el.value || '').trim();
       if (!v) {
         el.classList.add('err');
@@ -1073,6 +1002,7 @@
     return valid;
   }
 
+  // ───── Step navigation ─────
   function showStep(n) {
     const cur = form.querySelector(`.step[data-step="${currentStep}"]`);
     const nxt = form.querySelector(`.step[data-step="${n}"]`);
@@ -1121,14 +1051,38 @@
     if (currentStep > 1) showStep(currentStep - 1);
   });
 
-  function collectAllFields() {
-    const fd = new FormData(form);
+  // ───── File → Base64 ─────
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        const idx = result.indexOf(',');
+        resolve({
+          filename: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          size: file.size,
+          base64: idx >= 0 ? result.substring(idx + 1) : result
+        });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function collectAllFields() {
     const out = {};
+    const fd = new FormData(form);
     for (const [k, v] of fd.entries()) {
+      if (v instanceof File) continue;
       out[k] = typeof v === 'string' ? v.trim() : v;
     }
-    out.bestaetigung2 = form.bestaetigung2.checked ? 'Ja' : 'Nein';
-    out.datenschutz2 = form.datenschutz2.checked ? 'Ja' : 'Nein';
+
+    const lohnInput = document.getElementById('lohnFiles');
+    const ausweisInput = document.getElementById('ausweisFile');
+    out.lohnabrechnungen = await Promise.all([...lohnInput.files].map(fileToBase64));
+    out.ausweis = ausweisInput.files[0] ? [await fileToBase64(ausweisInput.files[0])] : [];
+
     return out;
   }
 
@@ -1151,13 +1105,13 @@
     if (!validateStep(currentStep)) return;
 
     submitBtn.disabled = true;
-    submitBtn.querySelector('span').textContent = 'Wird gesendet…';
-
-    const data = collectAllFields();
-    data.formular = 'Detailangaben';
-    data.zeitstempel = new Date().toLocaleString('de-DE');
+    submitBtn.querySelector('span').textContent = 'Wird hochgeladen…';
 
     try {
+      const data = await collectAllFields();
+      data.formular = 'Detailangaben';
+      data.zeitstempel = new Date().toLocaleString('de-DE');
+
       await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },

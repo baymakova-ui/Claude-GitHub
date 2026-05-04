@@ -67,6 +67,13 @@ const CONFIG = {
   // Öffentliche URL des Formulars 2 (z. B. auf eigenem Server gehostet):
   FORMULAR_2_LINK: 'https://immokanzlei24.de/formular-2-detailangaben.html',
 
+  // Google-Drive-Ordner-ID — übergeordneter Ordner, in dem für jede
+  // Bewerbung ein Unterordner "[Vorname Nachname] - [Datum]" erzeugt
+  // wird. ID aus der Drive-URL kopieren, z. B.:
+  // https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrSt
+  //                                          ^^^^^^^^^^^^^^^^^^^^^
+  DRIVE_FOLDER_ID: 'IHRE_GOOGLE_DRIVE_ORDNER_ID',
+
   // Bewertungslogik
   KALTMIETE: 800,                  // EUR – Referenzkaltmiete der Wohnung
   MIN_FAKTOR: 3.0,                 // Nettoeinkommen muss >= KALTMIETE * MIN_FAKTOR sein
@@ -111,15 +118,10 @@ const SPALTEN_FORM1 = [
 
 const SPALTEN_FORM2 = [
   'zeitstempel',
-  'vorname', 'nachname', 'email',
+  'vorname', 'nachname', 'email', 'beruf',
   'bruttoEinkommen', 'nachweisArt', 'unbefristet',
-  'nachweiseVerfuegbar', 'nachweiseAb',
-  'kredite', 'kreditrate',
-  'eigenkapital', 'kontoauszuege', 'hausbank', 'sepa', 'bonitaet',
-  'vermieterName', 'vermieterKontakt', 'mietdauerVermieter',
-  'puenktlich', 'referenzschreiben', 'vermieterKontaktOK', 'vermieterAnmerkungen',
-  'buerge', 'buergeDetail', 'einzugstermin', 'persoenlicheUmstaende',
-  'bestaetigung2', 'datenschutz2'
+  'lohnabrechnungenDateien', 'ausweisDatei',
+  'driveOrdner'
 ];
 
 
@@ -142,6 +144,23 @@ function doPost(e) {
     } else if (data.formular === 'Detailangaben') {
       sheetName = CONFIG.SHEET_FORM2;
       spalten = SPALTEN_FORM2;
+
+      // Dateien zuerst in Drive ablegen, anschließend die URLs in
+      // die zur Sheet-Spalte gehörenden Felder schreiben. Die rohen
+      // Base64-Inhalte werden NICHT in die Tabelle übernommen.
+      try {
+        const result = saveFilesToDrive(data);
+        data.lohnabrechnungenDateien = result.lohnUrls.join('\n');
+        data.ausweisDatei = result.ausweisUrl;
+        data.driveOrdner = result.folderUrl;
+      } catch (driveErr) {
+        Logger.log('Drive-Upload fehlgeschlagen: ' + driveErr);
+        data.lohnabrechnungenDateien = 'FEHLER: ' + driveErr;
+        data.ausweisDatei = '';
+        data.driveOrdner = '';
+      }
+      delete data.lohnabrechnungen;
+      delete data.ausweis;
     } else {
       return _jsonResponse({ status: 'error', message: 'Unknown formular type' });
     }
@@ -208,6 +227,59 @@ function _rowToObject(sheet, rowNum, spalten) {
   const obj = {};
   spalten.forEach((k, i) => obj[k] = values[i]);
   return obj;
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════
+ *  saveFilesToDrive(data)
+ *  ─────────────────────────────────────────────────────────────────────
+ *  Legt für eine Bewerbung einen Unterordner im konfigurierten
+ *  DRIVE_FOLDER_ID an (Name: "[Vorname Nachname] - [Datum]") und
+ *  speichert die übergebenen Dateien dort ab.
+ *
+ *  Erwartet im data-Objekt:
+ *      data.lohnabrechnungen  → Array von { filename, mimeType, base64 }
+ *      data.ausweis           → Array von { filename, mimeType, base64 } (max. 1)
+ *
+ *  Rückgabe:
+ *      { folderUrl, lohnUrls: [url, ...], ausweisUrl: 'url' }
+ * ═════════════════════════════════════════════════════════════════════ */
+function saveFilesToDrive(data) {
+  if (!CONFIG.DRIVE_FOLDER_ID || CONFIG.DRIVE_FOLDER_ID === 'IHRE_GOOGLE_DRIVE_ORDNER_ID') {
+    throw new Error('CONFIG.DRIVE_FOLDER_ID ist nicht gesetzt.');
+  }
+
+  const parent = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  const tz = Session.getScriptTimeZone() || 'Europe/Berlin';
+  const datum = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const personName = ((data.vorname || '') + ' ' + (data.nachname || '')).trim() || 'Unbekannt';
+  const folderName = personName + ' - ' + datum;
+
+  const folder = parent.createFolder(folderName);
+
+  function _saveAll(arr, prefix) {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(function (f, i) {
+      if (!f || !f.base64) return '';
+      const safeName = (f.filename || 'datei').replace(/[\\/:*?"<>|]/g, '_');
+      const blobName = prefix + '_' + (i + 1) + '_' + safeName;
+      const blob = Utilities.newBlob(
+        Utilities.base64Decode(f.base64),
+        f.mimeType || 'application/octet-stream',
+        blobName
+      );
+      return folder.createFile(blob).getUrl();
+    });
+  }
+
+  const lohnUrls = _saveAll(data.lohnabrechnungen, 'Lohnabrechnung');
+  const ausweisUrls = _saveAll(data.ausweis, 'Ausweis');
+
+  return {
+    folderUrl: folder.getUrl(),
+    lohnUrls: lohnUrls,
+    ausweisUrl: ausweisUrls[0] || ''
+  };
 }
 
 
@@ -355,42 +427,34 @@ function onForm2Submit(data) {
 
   // Tabelle aller Antworten
   const labels = {
-    vorname: 'Vorname', nachname: 'Nachname', email: 'E-Mail',
+    vorname: 'Vorname',
+    nachname: 'Nachname',
+    email: 'E-Mail',
+    beruf: 'Beruf',
     bruttoEinkommen: 'Bruttogehalt (€)',
     nachweisArt: 'Art des Nachweises',
     unbefristet: 'Unbefristet?',
-    nachweiseVerfuegbar: 'Nachweise verfügbar',
-    nachweiseAb: 'Nachweise verfügbar ab',
-    kredite: 'Laufende Kredite',
-    kreditrate: 'Kreditrate (€)',
-    eigenkapital: 'Eigenkapital',
-    kontoauszuege: 'Kontoauszüge',
-    hausbank: 'Hausbank',
-    sepa: 'SEPA möglich',
-    bonitaet: 'Selbsteinschätzung Bonität',
-    vermieterName: 'Vermieter',
-    vermieterKontakt: 'Vermieter Kontakt',
-    mietdauerVermieter: 'Mietdauer beim Vermieter',
-    puenktlich: 'Pünktlich gezahlt',
-    referenzschreiben: 'Referenzschreiben',
-    vermieterKontaktOK: 'Vermieter kontaktierbar',
-    vermieterAnmerkungen: 'Anmerkungen Vermieter',
-    buerge: 'Bürge',
-    buergeDetail: 'Bürge Kontakt',
-    einzugstermin: 'Einzugstermin',
-    persoenlicheUmstaende: 'Persönliche Umstände',
-    bestaetigung2: 'Bestätigung Angaben',
-    datenschutz2: 'Datenschutz',
+    lohnabrechnungenDateien: 'Lohnabrechnungen (Drive-Links)',
+    ausweisDatei: 'Ausweis (Drive-Link)',
+    driveOrdner: 'Drive-Ordner',
     zeitstempel: 'Eingangszeit'
   };
 
   const rows = Object.keys(labels).map(k => {
     const v = data[k];
     if (v === undefined || v === null || v === '') return '';
+    const str = String(v);
+    // URLs (Drive-Links) klickbar machen, mehrzeilige Listen erlauben
+    const cell = str.split('\n').map(line => {
+      if (/^https?:\/\//.test(line.trim())) {
+        return `<a href="${_escape(line.trim())}" style="color:${CONFIG.COLOR_PRIMARY}; font-weight:600;">${_escape(line.trim())}</a>`;
+      }
+      return _escape(line);
+    }).join('<br>');
     return `
       <tr>
         <td style="padding:8px 12px; border-bottom:1px solid #e8e4dc; font-size:13px; color:#6b7280; width:40%; vertical-align:top;">${labels[k]}</td>
-        <td style="padding:8px 12px; border-bottom:1px solid #e8e4dc; font-size:13px; color:#0d1f3c; font-weight:500;">${_escape(String(v))}</td>
+        <td style="padding:8px 12px; border-bottom:1px solid #e8e4dc; font-size:13px; color:#0d1f3c; font-weight:500; word-break:break-all;">${cell}</td>
       </tr>`;
   }).filter(Boolean).join('');
 
