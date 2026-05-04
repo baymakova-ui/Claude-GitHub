@@ -28,36 +28,27 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { min-height: 100%; }
+  html { background: var(--bg); }
 
   body {
     font-family: 'Mulish', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px;
     line-height: 1.6;
     color: var(--primary);
-    background: var(--bg);
+    background: transparent;
     min-height: 100vh;
     padding: 36px 16px 36px;
     position: relative;
     overflow-x: hidden;
   }
 
-  body::before {
-    content: '';
+  /* Animated gold-ribbon background — full-page canvas behind everything */
+  #ribbonCanvas {
     position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 10% 0%, rgba(201, 168, 76, 0.10), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 95% 15%, rgba(201, 168, 76, 0.06), transparent 60%);
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
     z-index: -1;
-    pointer-events: none;
-  }
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201, 168, 76, 0.05), transparent 70%);
-    z-index: -2;
     pointer-events: none;
   }
 
@@ -629,6 +620,8 @@
 </head>
 <body>
 
+<canvas id="ribbonCanvas" aria-hidden="true"></canvas>
+
 <div class="page-shell">
 
   <div class="brand-bar">
@@ -857,6 +850,125 @@
   </div>
 
 </div>
+
+<script>
+  /* ───────────────────────────────────────────────────────────────
+   *  Animated gold-ribbon background
+   *  Long, semi-transparent silk ribbons flowing diagonally from
+   *  bottom-left to top-right, each with its own speed, amplitude,
+   *  and gentle "breathing" sine modulation.
+   * ─────────────────────────────────────────────────────────────── */
+  (function () {
+    const canvas = document.getElementById('ribbonCanvas');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+
+    const BG_COLOR = '#f4f2ed';
+    const RIBBON_COLOR = '201, 168, 76'; // #c9a84c
+    const FLOW_ANGLE = -Math.PI / 4;     // bottom-left → top-right
+    const RIBBON_COUNT = 6;
+
+    let dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    function resize() {
+      dpr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    function makeRibbon() {
+      return {
+        length:        rand(620, 1180),
+        strokeWidth:   rand(8, 18),
+        opacity:       rand(0.13, 0.22),
+        speed:         rand(0.30, 0.80),
+        amplitude:     rand(34, 96),
+        wavelength:    rand(220, 460),
+        phase:         rand(0, Math.PI * 2),
+        breathePhase:  rand(0, Math.PI * 2),
+        breatheSpeed:  rand(0.00028, 0.00068),
+        flowPhaseRate: rand(0.00018, 0.00042),
+        trackOffset: 0,
+        s: 0
+      };
+    }
+
+    function spawn(r, initial) {
+      const W = window.innerWidth, H = window.innerHeight;
+      const D = Math.sqrt(W * W + H * H);
+      r.trackOffset = rand(-D * 0.55, D * 0.55);
+      r.s = initial
+        ? rand(-D * 0.7, D * 0.7)
+        : -D * 0.7 - r.length * 0.5;
+    }
+
+    function step(r) {
+      r.s += r.speed;
+      const W = window.innerWidth, H = window.innerHeight;
+      const D = Math.sqrt(W * W + H * H);
+      if (r.s - r.length * 0.5 > D * 0.7 + 80) spawn(r, false);
+    }
+
+    function drawRibbon(r, time) {
+      const dx = Math.cos(FLOW_ANGLE), dy = Math.sin(FLOW_ANGLE);
+      const px = -dy, py = dx;
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+
+      const centerX = cx + dx * r.s + px * r.trackOffset;
+      const centerY = cy + dy * r.s + py * r.trackOffset;
+
+      const breathe = 1 + 0.18 * Math.sin(time * r.breatheSpeed + r.breathePhase);
+      const amp = r.amplitude * breathe;
+
+      ctx.strokeStyle = 'rgba(' + RIBBON_COLOR + ', ' + r.opacity + ')';
+      ctx.lineWidth = r.strokeWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      const steps = 64;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const along = (t - 0.5) * r.length;
+        const wavePhase = (along / r.wavelength) * Math.PI * 2 + r.phase + time * r.flowPhaseRate;
+        const wave = Math.sin(wavePhase) * amp;
+        const x = centerX + dx * along + px * wave;
+        const y = centerY + dy * along + py * wave;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    const ribbons = [];
+    function setupRibbons() {
+      ribbons.length = 0;
+      for (let i = 0; i < RIBBON_COUNT; i++) {
+        const r = makeRibbon();
+        spawn(r, true);
+        ribbons.push(r);
+      }
+    }
+
+    function frame(time) {
+      ctx.fillStyle = BG_COLOR;
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+      for (let i = 0; i < ribbons.length; i++) {
+        step(ribbons[i]);
+        drawRibbon(ribbons[i], time);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    setupRibbons();
+    requestAnimationFrame(frame);
+  })();
+</script>
 
 <script>
   const GAS_URL = 'IHRE_GOOGLE_APPS_SCRIPT_URL_HIER';
