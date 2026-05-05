@@ -369,6 +369,10 @@
     box-shadow: 0 0 0 3px var(--accent-light);
   }
 
+  /* Full-width column variant — for long radio labels */
+  .pills.col { flex-direction: column; align-items: stretch; }
+  .pills.col label { flex: none; width: 100%; min-width: 0; padding: 13px 18px; }
+
   /* Conditional */
   .cond {
     max-height: 0;
@@ -630,40 +634,54 @@
               <input type="tel" id="telefon" name="telefon" autocomplete="tel" required />
               <span class="err-msg">Bitte geben Sie Ihre Telefonnummer an.</span>
             </div>
-            <div class="field">
-              <label class="lbl" for="geburtsdatum">Geburtsdatum<span class="req">*</span></label>
-              <input type="date" id="geburtsdatum" name="geburtsdatum" required />
-              <span class="err-msg">Bitte geben Sie Ihr Geburtsdatum an.</span>
+          </div>
+        </div>
+
+        <!-- ───── Step 2: Objekt-Check ───── -->
+        <div class="step" data-step="2">
+          <div class="grid">
+            <div class="field full">
+              <label class="lbl">Haben Sie das Exposé und den 360°-Rundgang bereits im Detail geprüft?<span class="req">*</span></label>
+              <div class="pills col" data-radio="exponiert">
+                <input type="radio" id="exp-ja"   name="exponiert" value="Ja, ich habe mir alles genau angesehen." />
+                <label for="exp-ja">Ja, ich habe mir alles genau angesehen.</label>
+                <input type="radio" id="exp-nein" name="exponiert" value="Nein, noch nicht." />
+                <label for="exp-nein">Nein, noch nicht.</label>
+              </div>
+              <span class="err-msg">Bitte wählen Sie eine Option.</span>
             </div>
-            <div class="field">
-              <label class="lbl" for="geburtsort">Geburtsort</label>
-              <input type="text" id="geburtsort" name="geburtsort" />
+
+            <div class="field full">
+              <label class="lbl">Passen die Eckdaten der Immobilie zu Ihren Vorstellungen?<span class="req">*</span></label>
+              <span class="hint">Bitte prüfen Sie im Exposé die Angaben zu Größe (m²), Zimmeranzahl und zum Zustand der Immobilie, um sicherzustellen, dass das Objekt grundsätzlich für Sie geeignet ist.</span>
+              <div class="pills col" data-radio="eckdaten" style="margin-top:10px;">
+                <input type="radio" id="eck-ja"   name="eckdaten" value="Ja, die Eckdaten (Größe, Zimmeranzahl, Zustand) passen perfekt zu meinem Bedarf." />
+                <label for="eck-ja">Ja, die Eckdaten (Größe, Zimmeranzahl, Zustand) passen perfekt zu meinem Bedarf.</label>
+                <input type="radio" id="eck-nein" name="eckdaten" value="Nein, ich habe noch Rückfragen dazu." />
+                <label for="eck-nein">Nein, ich habe noch Rückfragen dazu.</label>
+              </div>
+              <span class="err-msg">Bitte wählen Sie eine Option.</span>
+            </div>
+
+            <div class="field full">
+              <label class="lbl">Passt die Lage (Infrastruktur, Arbeitsweg, Schulen etc.) zu Ihren Bedürfnissen?<span class="req">*</span></label>
+              <div class="pills col" data-radio="lage">
+                <input type="radio" id="lage-ja"   name="lage" value="Ja, die Lage passt sehr gut." />
+                <label for="lage-ja">Ja, die Lage passt sehr gut.</label>
+                <input type="radio" id="lage-nein" name="lage" value="Nein, ich habe noch Bedenken." />
+                <label for="lage-nein">Nein, ich habe noch Bedenken.</label>
+              </div>
+              <span class="err-msg">Bitte wählen Sie eine Option.</span>
             </div>
           </div>
         </div>
 
-        <!-- ───── Step 2 ───── -->
-        <div class="step" data-step="2">
+        <!-- ───── Step 3: Persönliche Angaben ───── -->
+        <div class="step" data-step="3">
           <div class="grid">
             <div class="field">
-              <label class="lbl" for="staatsangehoerigkeit">Staatsangehörigkeit<span class="req">*</span></label>
-              <input type="text" id="staatsangehoerigkeit" name="staatsangehoerigkeit" required />
-              <span class="err-msg">Bitte angeben.</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="familienstand">Familienstand</label>
-              <select id="familienstand" name="familienstand">
-                <option value="">Bitte auswählen…</option>
-                <option>Ledig</option>
-                <option>Verheiratet</option>
-                <option>Geschieden</option>
-                <option>Verwitwet</option>
-                <option>Eingetragene Lebenspartnerschaft</option>
-              </select>
-            </div>
-            <div class="field">
-              <label class="lbl" for="anzahlPersonen">Anzahl der einziehenden Personen<span class="req">*</span></label>
-              <input type="number" id="anzahlPersonen" name="anzahlPersonen" min="1" value="1" required />
+              <label class="lbl" for="personen">Anzahl der einziehenden Personen<span class="req">*</span></label>
+              <input type="number" id="personen" name="personen" min="1" value="1" required />
               <span class="hint">Inkl. Antragsteller/in</span>
               <span class="err-msg">Bitte angeben.</span>
             </div>
@@ -680,156 +698,30 @@
 
             <div class="full cond" id="cond-haustiere">
               <div class="field">
-                <label class="lbl" for="haustiereDetail">Welche Haustiere?</label>
-                <input type="text" id="haustiereDetail" name="haustiereDetail" placeholder="z. B. 1 Katze, klein" />
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="field full">
-              <label class="lbl" for="ausweisnummer">Personalausweis-/Reisepassnummer</label>
-              <input type="text" id="ausweisnummer" name="ausweisnummer" />
-              <span class="hint">Freiwillige Angabe</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- ───── Step 3 ───── -->
-        <div class="step" data-step="3">
-          <div class="grid">
-            <div class="field">
-              <label class="lbl" for="beschaeftigung">Beschäftigungsverhältnis<span class="req">*</span></label>
-              <select id="beschaeftigung" name="beschaeftigung" required>
-                <option value="">Bitte auswählen…</option>
-                <option>Angestellt (unbefristet)</option>
-                <option>Angestellt (befristet)</option>
-                <option>Beamter/Beamtin</option>
-                <option>Selbstständig</option>
-                <option>Freiberuflich</option>
-                <option>Rentner/Rentnerin</option>
-                <option>Student/Studentin</option>
-                <option>Arbeitssuchend</option>
-                <option>Sonstiges</option>
-              </select>
-              <span class="err-msg">Bitte auswählen.</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="arbeitgeber">Arbeitgeber / Auftraggeber<span class="req">*</span></label>
-              <input type="text" id="arbeitgeber" name="arbeitgeber" required />
-              <span class="err-msg">Bitte angeben.</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="beschaeftigtSeit">Beschäftigt seit</label>
-              <input type="date" id="beschaeftigtSeit" name="beschaeftigtSeit" />
-            </div>
-            <div class="field">
-              <label class="lbl" for="nettoEinkommen">Monatl. Nettoeinkommen<span class="req">*</span></label>
-              <div class="euro-wrap">
-                <span class="euro">€</span>
-                <input type="number" id="nettoEinkommen" name="nettoEinkommen" min="0" step="1" required />
-              </div>
-              <span class="err-msg">Bitte angeben.</span>
-            </div>
-            <div class="field">
-              <label class="lbl">Weitere Einkünfte?</label>
-              <div class="pills" data-radio="weitereEinkuenfte">
-                <input type="radio" id="we-nein" name="weitereEinkuenfte" value="Nein" />
-                <label for="we-nein">Nein</label>
-                <input type="radio" id="we-ja" name="weitereEinkuenfte" value="Ja" />
-                <label for="we-ja">Ja</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl">In Probezeit?</label>
-              <div class="pills" data-radio="probezeit">
-                <input type="radio" id="pz-nein" name="probezeit" value="Nein" />
-                <label for="pz-nein">Nein</label>
-                <input type="radio" id="pz-ja" name="probezeit" value="Ja" />
-                <label for="pz-ja">Ja</label>
-              </div>
-            </div>
-
-            <div class="full cond" id="cond-weitereEinkuenfte">
-              <div class="field">
-                <label class="lbl" for="weitereEinkuenfteBetrag">Betrag</label>
-                <div class="euro-wrap">
-                  <span class="euro">€</span>
-                  <input type="number" id="weitereEinkuenfteBetrag" name="weitereEinkuenfteBetrag" min="0" />
-                </div>
+                <label class="lbl" for="haustierArt">Welche Haustiere?</label>
+                <input type="text" id="haustierArt" name="haustierArt" placeholder="z. B. 1 Katze, klein" />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ───── Step 4 ───── -->
+        <!-- ───── Step 4: Finanzielles ───── -->
         <div class="step" data-step="4">
           <div class="grid">
             <div class="field full">
-              <label class="lbl" for="aktuelleAdresse">Aktuelle Adresse<span class="req">*</span></label>
-              <input type="text" id="aktuelleAdresse" name="aktuelleAdresse" placeholder="Hauptstraße 1, 77652 Offenburg" required />
+              <label class="lbl" for="nettoEinkommen">Gesamtes Netto-Einkommen aller zukünftigen Mieter (pro Monat)<span class="req">*</span></label>
+              <span class="hint">Bitte geben Sie hier die Summe der monatlichen Netto-Einkünfte aller Personen an, die in die Wohnung einziehen werden.</span>
+              <div class="euro-wrap" style="margin-top:8px;">
+                <span class="euro">€</span>
+                <input type="number" id="nettoEinkommen" name="nettoEinkommen" min="0" step="1" placeholder="2500" required />
+              </div>
+              <span class="hint">Bitte nur als Zahl eingeben (z. B. 2500).</span>
               <span class="err-msg">Bitte angeben.</span>
             </div>
-            <div class="field">
-              <label class="lbl" for="kaltmiete">Aktuelle Kaltmiete</label>
-              <div class="euro-wrap">
-                <span class="euro">€</span>
-                <input type="number" id="kaltmiete" name="kaltmiete" min="0" />
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl" for="vermieterName">Aktueller Vermieter Name</label>
-              <input type="text" id="vermieterName" name="vermieterName" />
-            </div>
-            <div class="field">
-              <label class="lbl" for="vermieterKontakt">Vermieter Telefon/E-Mail</label>
-              <input type="text" id="vermieterKontakt" name="vermieterKontakt" />
-              <span class="hint">Für Referenzanfrage</span>
-            </div>
-            <div class="field">
-              <label class="lbl" for="wohnenSeit">Wohnen seit</label>
-              <input type="date" id="wohnenSeit" name="wohnenSeit" />
-            </div>
 
-            <div class="divider"></div>
-
-            <div class="field">
-              <label class="lbl">Mietschulden vorhanden?<span class="req">*</span></label>
-              <div class="pills" data-radio="mietschulden">
-                <input type="radio" id="ms-nein" name="mietschulden" value="Nein" />
-                <label for="ms-nein">Nein</label>
-                <input type="radio" id="ms-ja" name="mietschulden" value="Ja" />
-                <label for="ms-ja">Ja</label>
-              </div>
-              <span class="err-msg">Bitte auswählen.</span>
-            </div>
-            <div class="field">
-              <label class="lbl">SCHUFA-Auskunft vorhanden?<span class="req">*</span></label>
-              <div class="pills" data-radio="schufa">
-                <input type="radio" id="sc-ja" name="schufa" value="Ja" />
-                <label for="sc-ja">Ja</label>
-                <input type="radio" id="sc-nein" name="schufa" value="Nein" />
-                <label for="sc-nein">Nein</label>
-              </div>
-              <span class="err-msg">Bitte auswählen.</span>
-            </div>
-            <div class="field">
-              <label class="lbl">Insolvenzverfahren in letzten 5 Jahren?</label>
-              <div class="pills" data-radio="insolvenz">
-                <input type="radio" id="iv-nein" name="insolvenz" value="Nein" />
-                <label for="iv-nein">Nein</label>
-                <input type="radio" id="iv-ja" name="insolvenz" value="Ja" />
-                <label for="iv-ja">Ja</label>
-              </div>
-            </div>
-            <div class="field">
-              <label class="lbl">Kaution (3 Monatskaltmieten) leistbar?</label>
-              <div class="pills" data-radio="kaution">
-                <input type="radio" id="kt-ja" name="kaution" value="Ja" />
-                <label for="kt-ja">Ja</label>
-                <input type="radio" id="kt-nein" name="kaution" value="Nein" />
-                <label for="kt-nein">Nein</label>
-              </div>
+            <div class="field full">
+              <label class="lbl" for="fragenObjekt">Haben Sie bereits konkrete Fragen zum Objekt?</label>
+              <textarea id="fragenObjekt" name="fragenObjekt" placeholder="Ihre Fragen zum Objekt…"></textarea>
             </div>
           </div>
         </div>
@@ -851,10 +743,6 @@
                 <option>2 Jahre</option>
                 <option>3 Jahre oder länger</option>
               </select>
-            </div>
-            <div class="field full">
-              <label class="lbl" for="umzugsgrund">Grund für den Umzug</label>
-              <textarea id="umzugsgrund" name="umzugsgrund" placeholder="z. B. Jobwechsel, mehr Platz benötigt…"></textarea>
             </div>
             <div class="field full">
               <label class="lbl" for="anmerkungen">Sonstige Anmerkungen</label>
@@ -1041,22 +929,22 @@
   const TOTAL_STEPS = 5;
   const STEP_META = {
     1: { title: 'Kontaktdaten', subtitle: 'Ihre grundlegenden Kontaktinformationen für die Kommunikation mit uns.' },
-    2: { title: 'Persönliche Angaben', subtitle: 'Informationen zu Ihrer persönlichen Situation und den zukünftigen Bewohnern.' },
-    3: { title: 'Berufliche Situation', subtitle: 'Angaben zu Ihrem Beschäftigungsverhältnis und Ihrem Einkommen.' },
-    4: { title: 'Aktuelle Wohnsituation', subtitle: 'Informationen zu Ihrer bestehenden Wohnsituation und Vermieterreferenz.' },
+    2: { title: 'Objekt-Check', subtitle: 'Bitte bestätigen Sie, dass die Immobilie zu Ihren Vorstellungen passt.' },
+    3: { title: 'Persönliche Angaben', subtitle: 'Informationen zu den zukünftigen Bewohnern.' },
+    4: { title: 'Finanzielles', subtitle: 'Angaben zum Haushaltseinkommen und Ihre Fragen zum Objekt.' },
     5: { title: 'Einzug & Bestätigung', subtitle: 'Ihre Wünsche zum Einzug sowie rechtliche Bestätigung Ihrer Angaben.' }
   };
 
   // Required fields per step
   const REQUIRED = {
-    1: ['vorname', 'nachname', 'email', 'telefon', 'geburtsdatum'],
-    2: ['staatsangehoerigkeit', 'anzahlPersonen', 'haustiere'],
-    3: ['beschaeftigung', 'arbeitgeber', 'nettoEinkommen'],
-    4: ['aktuelleAdresse', 'mietschulden', 'schufa'],
+    1: ['vorname', 'nachname', 'email', 'telefon'],
+    2: ['exponiert', 'eckdaten', 'lage'],
+    3: ['personen', 'haustiere'],
+    4: ['nettoEinkommen'],
     5: ['einzugstermin', 'bestaetigung1', 'datenschutz1']
   };
 
-  const RADIO_FIELDS = ['haustiere', 'weitereEinkuenfte', 'probezeit', 'mietschulden', 'schufa', 'insolvenz', 'kaution'];
+  const RADIO_FIELDS = ['exponiert', 'eckdaten', 'lage', 'haustiere'];
 
   let currentStep = 1;
 
@@ -1088,7 +976,6 @@
     });
   }
   setupConditional('haustiere', 'cond-haustiere');
-  setupConditional('weitereEinkuenfte', 'cond-weitereEinkuenfte');
 
   // ────────────────────────────────────────────────────────
   // Clear errors on input

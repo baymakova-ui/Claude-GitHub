@@ -104,15 +104,12 @@ const CONFIG = {
  * ───────────────────────────────────────────────────────────────────── */
 const SPALTEN_FORM1 = [
   'zeitstempel',
-  'vorname', 'nachname', 'email', 'telefon', 'geburtsdatum', 'geburtsort',
-  'staatsangehoerigkeit', 'familienstand', 'anzahlPersonen',
-  'haustiere', 'haustiereDetail', 'ausweisnummer',
-  'beschaeftigung', 'arbeitgeber', 'beschaeftigtSeit',
-  'nettoEinkommen', 'weitereEinkuenfte', 'weitereEinkuenfteBetrag', 'probezeit',
-  'aktuelleAdresse', 'kaltmiete', 'vermieterName', 'vermieterKontakt', 'wohnenSeit',
-  'mietschulden', 'schufa', 'insolvenz', 'kaution',
+  'vorname', 'nachname', 'email', 'telefon',
+  'exponiert', 'eckdaten', 'lage',
+  'personen', 'haustiere', 'haustierArt',
+  'nettoEinkommen', 'fragenObjekt',
   'kategorie',
-  'einzugstermin', 'mietdauer', 'umzugsgrund', 'anmerkungen',
+  'einzugstermin', 'mietdauer', 'anmerkungen',
   'bestaetigung1', 'datenschutz1'
 ];
 
