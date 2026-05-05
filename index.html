@@ -2,267 +2,878 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0a0a0a" />
-  <title>ImmoCity Builder · Immokanzlei</title>
-  <meta name="description" content="ImmoCity Builder — 3D Motivations-Stadt für das Immokanzlei Team." />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/svg+xml" href="icon.svg" />
-  <link rel="apple-touch-icon" href="icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betriebsprozesse bei Immokanzlei</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b6b6b;
+      --border: #e5e5e5;
+      --gold: #C9A84C;
+      --gold-soft: #f6efd9;
+      --card-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --code-bg: #f7f7f7;
     }
-  }
-  </script>
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+    a:hover { color: #000; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* HEADER */
+    header.site-header {
+      text-align: center;
+      padding: 24px 16px 8px;
+    }
+    header.site-header img.logo {
+      max-width: 240px;
+      width: 60%;
+      height: auto;
+      display: inline-block;
+    }
+    h1.page-title {
+      font-size: clamp(1.5rem, 2.4vw + 0.8rem, 2.1rem);
+      font-weight: 700;
+      margin: 18px 0 6px;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    p.page-subtitle {
+      color: var(--muted);
+      margin: 0 0 20px;
+      font-size: 0.98rem;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin: 8px 0 28px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: color 0.15s ease;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--text);
+      font-weight: 700;
+      border-bottom-color: var(--gold);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* SECTION HEADINGS */
+    h2.section-heading {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 28px 0 16px;
+      padding-left: 14px;
+      border-left: 4px solid var(--gold);
+      line-height: 1.3;
+    }
+    h3.subsection-heading {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 4px 0 14px;
+      color: var(--text);
+    }
+
+    /* OBJEKTE ROW */
+    .objekte-section { margin-bottom: 12px; }
+    .objekte-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 6px 2px 14px;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+    }
+    .objekte-scroll::-webkit-scrollbar { height: 8px; }
+    .objekte-scroll::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .objekt-card {
+      flex: 0 0 auto;
+      min-width: 170px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--gold);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 16px 14px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      scroll-snap-align: start;
+      position: relative;
+    }
+    .objekt-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 8px 18px rgba(0,0,0,0.06);
+    }
+    .objekt-card-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .objekt-card-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .objekt-edit-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 2px 4px;
+      color: var(--muted);
+      border-radius: 6px;
+    }
+    .objekt-edit-btn:hover { background: var(--gold-soft); color: var(--text); }
+    .objekt-rename-row {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+    .objekt-rename-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+    .objekt-rename-row input:focus { outline: 2px solid var(--gold); outline-offset: 0; border-color: var(--gold); }
+    .btn-mini {
+      background: var(--gold);
+      color: var(--text);
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-mini:hover { filter: brightness(0.96); }
+
+    .objekt-add {
+      flex: 0 0 auto;
+      min-width: 170px;
+      background: #fff;
+      border: 1.5px dashed var(--gold);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 16px 14px;
+      transition: background 0.15s ease;
+    }
+    .objekt-add:hover { background: var(--gold-soft); }
+
+    /* STEP LIST */
+    .steps { display: flex; flex-direction: column; gap: 10px; }
+    .step-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 14px 16px;
+    }
+    .step-number {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--text);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-text { color: var(--text); font-size: 0.98rem; }
+    .step-sublist {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      color: var(--text);
+    }
+    .step-sublist li { margin: 2px 0; }
+    .step-badges {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: flex-start;
+      max-width: 220px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-ksenya  { background: #FFD6E0; color: #a0304d; }
+    .badge-liana   { background: #FFF3B0; color: #8a6f00; }
+    .badge-mathieu { background: #C8F7C5; color: #2a6e27; }
+
+    /* TEMPLATE BLOCK */
+    .template-block {
+      position: relative;
+      background: var(--code-bg);
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      padding: 14px 14px 14px 16px;
+      margin-top: 10px;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      color: var(--text);
+      overflow-x: auto;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .copy-btn:hover { background: var(--gold-soft); border-color: var(--gold); }
+    .copy-btn.copied { background: var(--gold); border-color: var(--gold); }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      z-index: 1000;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      transform: translateY(8px) scale(0.98);
+      transition: transform 0.22s ease;
+      padding: 22px;
+      position: relative;
+    }
+    .modal-overlay.show .modal { transform: translateY(0) scale(1); }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .modal-close:hover { background: var(--code-bg); color: var(--text); }
+    .modal h2 {
+      margin: 0 0 16px;
+      font-size: 1.2rem;
+      padding-right: 32px;
+    }
+
+    .field-group { margin-bottom: 14px; }
+    .field-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .field-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .field-row input[type="url"] {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+    .field-row input[type="url"]:focus {
+      outline: 2px solid var(--gold);
+      outline-offset: 0;
+      border-color: var(--gold);
+    }
+    .open-link {
+      flex: 0 0 auto;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: var(--gold-soft);
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .open-link:hover { background: var(--gold); }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .btn {
+      background: var(--gold);
+      color: var(--text);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(0.96); }
+    .btn-outline {
+      background: #fff;
+      color: var(--text);
+      border: 1.5px solid var(--gold);
+    }
+    .btn-outline:hover { background: var(--gold-soft); }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 1100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* FOOTER */
+    footer.site-footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 32px 16px 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+    footer.site-footer a { color: var(--muted); }
+    footer.site-footer a:hover { color: var(--text); }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .container { padding: 16px 14px 64px; }
+      .step-card { flex-wrap: wrap; }
+      .step-badges {
+        max-width: 100%;
+        justify-content: flex-start;
+        margin-left: 48px;
+        margin-top: 4px;
+      }
+      .objekt-card, .objekt-add { min-width: 150px; }
+      h1.page-title { font-size: 1.4rem; }
+    }
+  </style>
 </head>
 <body>
-  <!-- LOGO -->
-  <div id="brand">
-    <div class="brand-logo" aria-hidden="true">
-      <svg viewBox="0 0 64 64" width="40" height="40">
-        <defs>
-          <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#f7d774"/>
-            <stop offset="1" stop-color="#b8860b"/>
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="60" height="60" rx="10" fill="#0a0a0a" stroke="url(#gold)" stroke-width="2"/>
-        <path d="M12 44 L12 28 L32 14 L52 28 L52 44 Z" fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linejoin="round"/>
-        <path d="M22 44 L22 34 L42 34 L42 44" fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linejoin="round"/>
-        <text x="32" y="56" text-anchor="middle" fill="url(#gold)" font-family="Montserrat" font-weight="900" font-size="8">IMMO</text>
-      </svg>
-    </div>
-    <div class="brand-text">
-      <div class="brand-title">ImmoCity Builder</div>
-      <div class="brand-sub">Immokanzlei · Team Motivation</div>
+  <div class="container">
+    <header class="site-header">
+      <img class="logo" src="https://immokanzlei24.de/wp-content/uploads/2025/03/Logo-Immokanzlei-GmbH-transparent-e1742371123325-300x183.png" alt="Immokanzlei GmbH" />
+      <h1 class="page-title">Betriebsprozesse bei Immokanzlei</h1>
+      <p class="page-subtitle">Interne Arbeitsanleitungen &amp; Objektübersicht</p>
+    </header>
+
+    <nav class="tabs" role="tablist" id="tabs">
+      <button class="tab-btn active" role="tab" data-tab="vermietung" aria-selected="true">Vermietung</button>
+    </nav>
+
+    <section class="tab-pane active" id="tab-vermietung" role="tabpanel">
+      <section class="objekte-section">
+        <h2 class="section-heading">Aktuelle Objekte</h2>
+        <div class="objekte-scroll" id="objekte-scroll"></div>
+      </section>
+
+      <section class="anleitung-section">
+        <h2 class="section-heading">Arbeitsanleitung: Vermietung</h2>
+        <ol class="steps" id="steps-list"></ol>
+      </section>
+    </section>
+
+    <footer class="site-footer">
+      © 2025 Immokanzlei GmbH ·
+      <a href="https://immokanzlei24.de/impressum/" target="_blank" rel="noopener">Impressum</a> ·
+      <a href="https://immokanzlei24.de/datenschutzerklaerung/" target="_blank" rel="noopener">Datenschutz</a>
+    </footer>
+  </div>
+
+  <!-- Object links modal -->
+  <div class="modal-overlay" id="links-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="links-modal-title">
+      <button class="modal-close" id="links-modal-close" aria-label="Schließen">×</button>
+      <h2 id="links-modal-title">Links für …</h2>
+      <div id="links-fields"></div>
+      <div class="modal-actions">
+        <button class="btn-outline btn" id="links-cancel">Abbrechen</button>
+        <button class="btn" id="links-save">Speichern</button>
+      </div>
     </div>
   </div>
 
-  <!-- LOGIN SCREEN -->
-  <section id="login-screen" class="screen active">
-    <div class="login-card">
-      <div class="login-hero">
-        <div class="hero-circle"></div>
-        <h1>Willkommen</h1>
-        <p>Wählen Sie Ihren Namen, um Ihre persönliche Stadt zu betreten.</p>
-      </div>
-      <div class="login-form">
-        <label for="employee-select">Mitarbeiter auswählen</label>
-        <select id="employee-select">
-          <option value="">— Bitte wählen —</option>
-        </select>
-        <button id="login-btn" class="btn btn-gold">Einloggen</button>
-        <div class="divider"><span>oder</span></div>
-        <button id="qr-btn" class="btn btn-outline">QR scannen</button>
-        <div class="admin-link">
-          <button id="admin-toggle" class="link">Admin-Modus</button>
-        </div>
-      </div>
-    </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <div id="admin-login" class="modal hidden">
-      <div class="modal-content">
-        <h2>Admin-Modus</h2>
-        <p>Passwort eingeben</p>
-        <input type="password" id="admin-password" placeholder="Passwort" />
-        <div class="row">
-          <button id="admin-cancel" class="btn btn-outline">Abbrechen</button>
-          <button id="admin-login-btn" class="btn btn-gold">Anmelden</button>
-        </div>
-        <p id="admin-error" class="error hidden">Falsches Passwort.</p>
-      </div>
-    </div>
-
-    <div id="qr-modal" class="modal hidden">
-      <div class="modal-content">
-        <h2>QR-Code Schnellzugriff</h2>
-        <p>Scannen Sie diesen Code, um die App auf dem Handy zu öffnen.</p>
-        <div id="qr-canvas"></div>
-        <button id="qr-close" class="btn btn-outline">Schließen</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- MAIN APP SCREEN -->
-  <section id="app-screen" class="screen">
-    <!-- 3D CANVAS -->
-    <div id="three-container"></div>
-
-    <!-- TOP BAR -->
-    <header id="topbar">
-      <div class="topbar-left">
-        <button id="logout-btn" class="icon-btn" title="Abmelden">⎋</button>
-        <div class="welcome">
-          <div class="welcome-name" id="welcome-name">—</div>
-          <div class="welcome-sub" id="welcome-role">—</div>
-        </div>
-      </div>
-      <div class="topbar-center">
-        <select id="year-select" class="pill"></select>
-        <select id="month-select" class="pill">
-          <option value="0">Januar</option><option value="1">Februar</option>
-          <option value="2">März</option><option value="3">April</option>
-          <option value="4">Mai</option><option value="5">Juni</option>
-          <option value="6">Juli</option><option value="7">August</option>
-          <option value="8">September</option><option value="9">Oktober</option>
-          <option value="10">November</option><option value="11">Dezember</option>
-          <option value="all">Ganzes Jahr</option>
-        </select>
-      </div>
-      <div class="topbar-right">
-        <button id="leaderboard-btn" class="icon-btn" title="Top-Häuser">🏆</button>
-        <button id="admin-panel-btn" class="icon-btn hidden" title="Admin-Panel">⚙️</button>
-      </div>
-    </header>
-
-    <!-- CHARACTER GREETING -->
-    <div id="greeting" class="greeting hidden"></div>
-
-    <!-- HUD - PERSONAL KPI -->
-    <aside id="hud" class="hud">
-      <div class="hud-header">
-        <div class="hud-title" id="hud-title">Mein Haus</div>
-        <button id="hud-toggle" class="icon-btn-small">▾</button>
-      </div>
-      <div class="hud-body" id="hud-body">
-        <div class="kpi-grid" id="kpi-grid"></div>
-        <div class="goals" id="goals"></div>
-      </div>
-    </aside>
-
-    <!-- CITY NAV -->
-    <div id="city-nav">
-      <button class="icon-btn-small" id="nav-prev">◀</button>
-      <span id="nav-current">—</span>
-      <button class="icon-btn-small" id="nav-next">▶</button>
-      <button class="icon-btn-small" id="nav-overview" title="Stadtübersicht">🌆</button>
-    </div>
-
-    <!-- LEADERBOARD MODAL -->
-    <div id="leaderboard-modal" class="modal hidden">
-      <div class="modal-content wide">
-        <h2>🏆 Top-Häuser</h2>
-        <div id="leaderboard-list"></div>
-        <button class="btn btn-outline" data-close-modal="leaderboard-modal">Schließen</button>
-      </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div id="admin-modal" class="modal hidden">
-      <div class="modal-content wide tall">
-        <div class="admin-header">
-          <h2>⚙️ Admin-Panel</h2>
-          <button class="icon-btn" data-close-modal="admin-modal">✕</button>
-        </div>
-        <div class="admin-tabs">
-          <button class="tab active" data-tab="metrics">Kennzahlen</button>
-          <button class="tab" data-tab="employees">Mitarbeiter</button>
-          <button class="tab" data-tab="photos">Fotos</button>
-          <button class="tab" data-tab="export">Export</button>
-        </div>
-
-        <div class="admin-pane active" data-pane="metrics">
-          <div class="row">
-            <select id="adm-employee" class="pill"></select>
-            <select id="adm-year" class="pill"></select>
-            <select id="adm-month" class="pill">
-              <option value="0">Januar</option><option value="1">Februar</option>
-              <option value="2">März</option><option value="3">April</option>
-              <option value="4">Mai</option><option value="5">Juni</option>
-              <option value="6">Juli</option><option value="7">August</option>
-              <option value="8">September</option><option value="9">Oktober</option>
-              <option value="10">November</option><option value="11">Dezember</option>
-            </select>
-          </div>
-          <div class="adm-grid">
-            <label>Verkäufe (Stockwerke)
-              <input type="number" id="adm-sales" min="0" step="1" />
-            </label>
-            <label>Anrufe Brutto
-              <input type="number" id="adm-calls-gross" min="0" step="1" />
-            </label>
-            <label>Anrufe Netto
-              <input type="number" id="adm-calls-net" min="0" step="1" />
-            </label>
-            <label>Arbeitstage
-              <input type="number" id="adm-days" min="0" step="1" />
-            </label>
-            <label>Arbeitsstunden gesamt
-              <input type="number" id="adm-hours" min="0" step="0.1" />
-            </label>
-            <label>Bewertungen
-              <input type="number" id="adm-reviews" min="0" step="1" />
-            </label>
-            <label>Strategie-Blöcke (nur Markus)
-              <input type="number" id="adm-strategy" min="0" step="1" />
-            </label>
-          </div>
-          <div class="row">
-            <button id="adm-save" class="btn btn-gold">Speichern</button>
-            <button id="adm-reset" class="btn btn-outline">Monat zurücksetzen</button>
-          </div>
-          <p class="hint">Stunden pro Tag = Stunden ÷ Tage. Diese Zahl bestimmt, wie viele Ziegel pro Tag gebaut werden.</p>
-        </div>
-
-        <div class="admin-pane" data-pane="employees">
-          <div id="employees-list"></div>
-          <div class="row">
-            <input type="text" id="new-emp-name" placeholder="Name" />
-            <select id="new-emp-role">
-              <option value="seller">Verkäufer</option>
-              <option value="worker">Mitarbeiter</option>
-              <option value="leader">Leiter</option>
-              <option value="photographer">Fotograf</option>
-            </select>
-            <button id="add-emp" class="btn btn-gold">Hinzufügen</button>
-          </div>
-        </div>
-
-        <div class="admin-pane" data-pane="photos">
-          <div class="row">
-            <select id="photo-employee" class="pill"></select>
-          </div>
-          <div class="photo-area">
-            <img id="photo-preview" alt="" />
-            <input type="file" id="photo-input" accept="image/*" />
-            <button id="photo-save" class="btn btn-gold">Foto speichern (3D-Avatar erstellen)</button>
-            <button id="photo-remove" class="btn btn-outline">Foto entfernen</button>
-          </div>
-          <p class="hint">Das Foto wird automatisch auf den 3D-Cartoon-Charakter projiziert.</p>
-        </div>
-
-        <div class="admin-pane" data-pane="export">
-          <p>Daten als CSV herunterladen oder zur Weitergabe in Google Sheets kopieren.</p>
-          <div class="row">
-            <button id="export-csv" class="btn btn-gold">CSV exportieren</button>
-            <button id="copy-csv" class="btn btn-outline">In Zwischenablage</button>
-            <button id="import-json" class="btn btn-outline">Daten importieren</button>
-            <button id="export-json" class="btn btn-outline">Backup (JSON)</button>
-          </div>
-          <input type="file" id="json-input" accept=".json" class="hidden" />
-          <textarea id="csv-output" rows="10" placeholder="CSV erscheint hier..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOAST -->
-    <div id="toast" class="toast hidden"></div>
-    <div id="confetti-layer"></div>
-  </section>
-
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-  <script type="module" src="app.js"></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  (function () {
+    'use strict';
+
+    const STORAGE_KEY = 'immokanzlei.objekte.v1';
+    const DEFAULT_OBJEKTE = [
+      'MB0326OG', 'MB0426OG3', 'MM0426BAD93', 'MS0126APP',
+      'IN0426APP', 'LD0426OG', 'MGK0426GLD2', 'WS0426KEL1'
+    ];
+    const LINK_FIELDS = [
+      { key: 'gform1', label: 'Google Formular 1' },
+      { key: 'gtab1',  label: 'Tabelle zu Google Formular 1' },
+      { key: 'gform2', label: 'Google Formular 2' },
+      { key: 'gtab2',  label: 'Tabelle zu Google Formular 2' },
+      { key: 'props',  label: 'Propstack Formular' }
+    ];
+
+    function loadObjekte() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {}
+      return DEFAULT_OBJEKTE.map(name => ({ id: cryptoId(), name, links: {} }));
     }
+    function saveObjekte() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.objekte));
+    }
+    function cryptoId() {
+      return 'o_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    }
+
+    const state = {
+      objekte: loadObjekte(),
+      currentEditingId: null,
+      renamingId: null
+    };
+
+    /* ---------- OBJEKTE ---------- */
+    const scrollEl = document.getElementById('objekte-scroll');
+
+    function renderObjekte() {
+      scrollEl.innerHTML = '';
+      state.objekte.forEach(obj => scrollEl.appendChild(renderObjektCard(obj)));
+      const addBtn = document.createElement('button');
+      addBtn.className = 'objekt-add';
+      addBtn.type = 'button';
+      addBtn.textContent = '+ Objekt hinzufügen';
+      addBtn.addEventListener('click', addObjekt);
+      scrollEl.appendChild(addBtn);
+    }
+
+    function renderObjektCard(obj) {
+      const card = document.createElement('div');
+      card.className = 'objekt-card';
+      card.dataset.id = obj.id;
+
+      if (state.renamingId === obj.id) {
+        const row = document.createElement('div');
+        row.className = 'objekt-rename-row';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = obj.name;
+        input.setAttribute('aria-label', 'Objektname');
+        const save = document.createElement('button');
+        save.className = 'btn-mini';
+        save.type = 'button';
+        save.textContent = 'Speichern';
+        const commit = () => {
+          const v = input.value.trim();
+          if (v) obj.name = v;
+          state.renamingId = null;
+          saveObjekte();
+          renderObjekte();
+        };
+        save.addEventListener('click', e => { e.stopPropagation(); commit(); });
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { state.renamingId = null; renderObjekte(); }
+        });
+        input.addEventListener('click', e => e.stopPropagation());
+        row.appendChild(input);
+        row.appendChild(save);
+        card.appendChild(row);
+        setTimeout(() => input.focus(), 0);
+        card.addEventListener('click', e => e.stopPropagation());
+        return card;
+      }
+
+      const name = document.createElement('div');
+      name.className = 'objekt-card-name';
+      name.textContent = obj.name;
+
+      const actions = document.createElement('div');
+      actions.className = 'objekt-card-actions';
+      const filled = LINK_FIELDS.filter(f => (obj.links || {})[f.key]).length;
+      const meta = document.createElement('span');
+      meta.style.fontSize = '0.78rem';
+      meta.style.color = 'var(--muted)';
+      meta.textContent = filled + ' / ' + LINK_FIELDS.length + ' Links';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'objekt-edit-btn';
+      editBtn.type = 'button';
+      editBtn.title = 'Umbenennen';
+      editBtn.setAttribute('aria-label', 'Umbenennen');
+      editBtn.textContent = '✏️';
+      editBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        state.renamingId = obj.id;
+        renderObjekte();
+      });
+
+      actions.appendChild(meta);
+      actions.appendChild(editBtn);
+
+      card.appendChild(name);
+      card.appendChild(actions);
+
+      card.addEventListener('click', () => openLinksModal(obj.id));
+      return card;
+    }
+
+    function addObjekt() {
+      const obj = { id: cryptoId(), name: 'Neues Objekt', links: {} };
+      state.objekte.push(obj);
+      state.renamingId = obj.id;
+      saveObjekte();
+      renderObjekte();
+    }
+
+    /* ---------- MODAL ---------- */
+    const modal = document.getElementById('links-modal');
+    const modalTitle = document.getElementById('links-modal-title');
+    const fieldsWrap = document.getElementById('links-fields');
+
+    function openLinksModal(id) {
+      const obj = state.objekte.find(o => o.id === id);
+      if (!obj) return;
+      state.currentEditingId = id;
+      modalTitle.textContent = 'Links für ' + obj.name;
+      fieldsWrap.innerHTML = '';
+      LINK_FIELDS.forEach(f => {
+        const group = document.createElement('div');
+        group.className = 'field-group';
+        const label = document.createElement('label');
+        label.textContent = f.label;
+        label.htmlFor = 'fld-' + f.key;
+        const row = document.createElement('div');
+        row.className = 'field-row';
+        const input = document.createElement('input');
+        input.type = 'url';
+        input.id = 'fld-' + f.key;
+        input.dataset.key = f.key;
+        input.placeholder = 'https://…';
+        input.value = (obj.links && obj.links[f.key]) || '';
+        const open = document.createElement('a');
+        open.className = 'open-link';
+        open.target = '_blank';
+        open.rel = 'noopener';
+        open.textContent = 'Öffnen →';
+        const updateOpen = () => {
+          const v = input.value.trim();
+          if (v) {
+            open.href = v;
+            open.style.display = '';
+          } else {
+            open.removeAttribute('href');
+            open.style.display = 'none';
+          }
+        };
+        input.addEventListener('input', updateOpen);
+        updateOpen();
+        row.appendChild(input);
+        row.appendChild(open);
+        group.appendChild(label);
+        group.appendChild(row);
+        fieldsWrap.appendChild(group);
+      });
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeLinksModal() {
+      modal.classList.remove('show');
+      modal.setAttribute('aria-hidden', 'true');
+      state.currentEditingId = null;
+    }
+
+    function saveLinks() {
+      const obj = state.objekte.find(o => o.id === state.currentEditingId);
+      if (!obj) return;
+      obj.links = obj.links || {};
+      fieldsWrap.querySelectorAll('input[type="url"]').forEach(inp => {
+        obj.links[inp.dataset.key] = inp.value.trim();
+      });
+      saveObjekte();
+      closeLinksModal();
+      renderObjekte();
+      showToast('Gespeichert');
+    }
+
+    document.getElementById('links-modal-close').addEventListener('click', closeLinksModal);
+    document.getElementById('links-cancel').addEventListener('click', closeLinksModal);
+    document.getElementById('links-save').addEventListener('click', saveLinks);
+    modal.addEventListener('click', e => { if (e.target === modal) closeLinksModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && modal.classList.contains('show')) closeLinksModal();
+    });
+
+    /* ---------- TOAST ---------- */
+    const toast = document.getElementById('toast');
+    let toastT;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastT);
+      toastT = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    /* ---------- TABS ---------- */
+    document.getElementById('tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      const id = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        const active = b === btn;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.tab-pane').forEach(p => {
+        p.classList.toggle('active', p.id === 'tab-' + id);
+      });
+    });
+
+    /* ---------- STEPS ---------- */
+    const TEMPLATE_TEXT =
+'Rösselsbrünnlestraße 14, 76287 Rheinstetten\n\n' +
+'Guten Tag {{kontakt.anrede}} {{kontakt.nachname}},\n\n' +
+'vielen Dank, dass Sie an der Besichtigung des Objekts Rösselsbrünnlestraße 14, 76287 Rheinstetten teilgenommen haben. Im nächsten Schritt möchten wir den Vermieter bei der Auswahl der geeigneten Mieter unterstützen. Daher bitten wir Sie, die folgende Mietinteressenten-Abfrage auszufüllen und Ihre Schufa-Auskunft direkt im Formular hochzuladen:\n\n' +
+'👉 https://forms.gle/wGC7QAmwHCGLWpAPA (Beispiel)\n\n' +
+'Ihre Angaben helfen dem Vermieter, eine fundierte Entscheidung zu treffen. Sobald uns alle Informationen vorliegen, melden wir uns mit einem Update zum weiteren Verlauf.\n\n' +
+'Vielen Dank für Ihre Zeit und Ihr Interesse!\n' +
+'Mit freundlichen Grüßen,';
+
+    const STEPS = [
+      { n: 1, text: 'Der Kunde möchte die Wohnung vermieten.', badges: [] },
+      { n: 2, text: 'Wir fotografieren die Wohnung.', badges: [] },
+      { n: 3, text: 'Wir erstellen eine Objektanlage in Propstack.', badges: ['Mathieu', 'Liana'] },
+      { n: 4, text: 'Wir stellen die Immobilie online: Das Objekt wird auf den Portalen eingestellt und sichtbar gemacht.', badges: ['Mathieu', 'Liana'] },
+      { n: 5, text: 'Wir erstellen 2 Google-Formulare und eine gemeinsame Tabelle, um zu verfolgen, wem bereits das erste Google-Formular gesendet wurde.', badges: ['Ksenya'] },
+      { n: 6, text: 'Kundenanfragen.', badges: [] },
+      { n: 7, text: 'Kunden rufen an – wir bitten sie, sich über das Portal zu bewerben.', badges: ['Mathieu', 'Liana'] },
+      { n: 8, text: 'Google-Formular versenden: Allen Kunden, die sich über das Portal beworben haben, senden wir das erste Google-Formular.', badges: ['Ksenya'] },
+      { n: 9, text: 'Kundenkategorisierung: Die Kunden werden in der Tabelle zum Google-Formular in die Kategorien A, B und C eingeteilt.', badges: [] },
+      { n: 10, text: 'Dokumente von Kunden der Kategorie A anfordern: Kunden der Kategorie A erhalten innerhalb von 48 Stunden ein weiteres Google-Formular, in dem sie folgende Unterlagen hochladen müssen:',
+        sub: ['Lohnabrechnungen (letzte 3 Monate)', 'Gültigen Ausweis'],
+        badges: ['Ksenya'] },
+      { n: 11, text: 'Personen, die die Dokumente im zweiten Google-Formular gesendet haben, markieren wir in der ersten Google-Tabelle grün. Personen, denen das zweite Google-Formular gesendet wurde, die es aber noch nicht ausgefüllt haben, markieren wir gelb. Nach einigen Tagen senden wir Personen, die gelb markiert sind (und das Formular noch nicht ausgefüllt haben), das zweite Google-Formular erneut zur Ausfüllung und markieren sie orange. Nach weiteren Tagen, wenn der Kunde orange markiert ist und das Google-Formular immer noch nicht ausgefüllt hat, markieren wir ihn rot.', badges: ['Ksenya', 'Mathieu', 'Liana'] },
+      { n: 12, text: 'Besichtigungstermine: Besichtigungen werden nur mit Kunden vereinbart, die alle Dokumente eingereicht haben. Nach dem Besichtigungstermin müssen diese Kunden in der ersten Tabelle blau markiert werden.', badges: ['Mathieu', 'Liana'] },
+      { n: 13, text: 'Nach der Besichtigung – nächster Schritt nach der Besichtigung.', template: TEMPLATE_TEXT, badges: ['Mathieu', 'Liana'] },
+      { n: 14, text: 'Die Top-3-Kunden werden dem Eigentümer präsentiert; dieser wählt aus.', badges: ['Mathieu', 'Liana'] },
+      { n: 15, text: 'Mietvertrag vorbereiten: Haus- und Grund-Mietvertrag erstellen und dem ausgewählten Mieter zur Unterschrift zusenden.', badges: ['Mathieu', 'Liana'] },
+      { n: 16, text: 'Danach unterschreiben Eigentümer und Mieter.', badges: ['Mathieu', 'Liana'] },
+      { n: 17, text: 'Dem Vermieter eine Rechnung ausstellen.', badges: ['Mathieu', 'Liana'] },
+      { n: 18, text: 'Übergabe der Wohnung und Übergabeprotokoll erstellen.', badges: ['Mathieu', 'Liana'] }
+    ];
+
+    const BADGE_CLASS = {
+      Ksenya: 'badge-ksenya',
+      Liana: 'badge-liana',
+      Mathieu: 'badge-mathieu'
+    };
+
+    function renderSteps() {
+      const list = document.getElementById('steps-list');
+      list.innerHTML = '';
+      STEPS.forEach(step => {
+        const li = document.createElement('li');
+        li.className = 'step-card';
+
+        const num = document.createElement('div');
+        num.className = 'step-number';
+        num.textContent = step.n;
+
+        const body = document.createElement('div');
+        body.className = 'step-body';
+        const txt = document.createElement('div');
+        txt.className = 'step-text';
+        txt.textContent = step.text;
+        body.appendChild(txt);
+
+        if (step.sub) {
+          const ul = document.createElement('ul');
+          ul.className = 'step-sublist';
+          step.sub.forEach(item => {
+            const sli = document.createElement('li');
+            sli.textContent = item;
+            ul.appendChild(sli);
+          });
+          body.appendChild(ul);
+        }
+
+        if (step.template) {
+          const block = document.createElement('div');
+          block.className = 'template-block';
+          const pre = document.createElement('span');
+          pre.textContent = step.template;
+          const copy = document.createElement('button');
+          copy.className = 'copy-btn';
+          copy.type = 'button';
+          copy.textContent = '📋 Kopieren';
+          copy.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(step.template);
+            } catch (err) {
+              const ta = document.createElement('textarea');
+              ta.value = step.template;
+              document.body.appendChild(ta);
+              ta.select();
+              try { document.execCommand('copy'); } catch (e) {}
+              document.body.removeChild(ta);
+            }
+            copy.textContent = '✓ Kopiert!';
+            copy.classList.add('copied');
+            setTimeout(() => {
+              copy.textContent = '📋 Kopieren';
+              copy.classList.remove('copied');
+            }, 1600);
+          });
+          block.appendChild(copy);
+          block.appendChild(pre);
+          body.appendChild(block);
+        }
+
+        const badges = document.createElement('div');
+        badges.className = 'step-badges';
+        step.badges.forEach(name => {
+          const b = document.createElement('span');
+          b.className = 'badge ' + (BADGE_CLASS[name] || '');
+          b.textContent = name;
+          badges.appendChild(b);
+        });
+
+        li.appendChild(num);
+        li.appendChild(body);
+        li.appendChild(badges);
+        list.appendChild(li);
+      });
+    }
+
+    /* ---------- INIT ---------- */
+    renderObjekte();
+    renderSteps();
+  })();
   </script>
 </body>
 </html>
