@@ -271,9 +271,15 @@
       font-weight: 600;
       white-space: nowrap;
     }
-    .badge-ksenya  { background: #FFD6E0; color: #a0304d; }
-    .badge-liana   { background: #FFF3B0; color: #8a6f00; }
-    .badge-mathieu { background: #C8F7C5; color: #2a6e27; }
+    .badge-ksenya   { background: #FFD6E0; color: #a0304d; }
+    .badge-liana    { background: #FFF3B0; color: #8a6f00; }
+    .badge-mathieu  { background: #C8F7C5; color: #2a6e27; }
+    .badge-markus   { background: #FFCCCC; color: #cc0000; }
+    .badge-olja     { background: #FFE0B2; color: #e65c00; }
+    .badge-makler   { background: #FFF3CC; color: #b8860b; }
+    .badge-jennifer { background: #E8D5F5; color: #6a0dad; }
+    .badge-sidra    { background: #CCE5FF; color: #1a5276; }
+    .badge-neutral  { background: #e5e5e5; color: #555555; }
 
     /* TEMPLATE BLOCK */
     .template-block {
@@ -481,6 +487,7 @@
 
     <nav class="tabs" role="tablist" id="tabs">
       <button class="tab-btn active" role="tab" data-tab="vermietung" aria-selected="true">Vermietung</button>
+      <button class="tab-btn" role="tab" data-tab="verkauf" aria-selected="false">Verkauf</button>
     </nav>
 
     <section class="tab-pane active" id="tab-vermietung" role="tabpanel">
@@ -492,6 +499,18 @@
       <section class="anleitung-section">
         <h2 class="section-heading">Arbeitsanleitung: Vermietung</h2>
         <ol class="steps" id="steps-list"></ol>
+      </section>
+    </section>
+
+    <section class="tab-pane" id="tab-verkauf" role="tabpanel">
+      <section class="objekte-section">
+        <h2 class="section-heading">Aktuelle Objekte</h2>
+        <div class="objekte-scroll" id="objekte-scroll-verkauf"></div>
+      </section>
+
+      <section class="anleitung-section">
+        <h2 class="section-heading">Arbeitsanleitung: Verkauf</h2>
+        <ol class="steps" id="steps-list-verkauf"></ol>
       </section>
     </section>
 
@@ -521,11 +540,6 @@
   (function () {
     'use strict';
 
-    const STORAGE_KEY = 'immokanzlei.objekte.v1';
-    const DEFAULT_OBJEKTE = [
-      'MB0326OG', 'MB0426OG3', 'MM0426BAD93', 'MS0126APP',
-      'IN0426APP', 'LD0426OG', 'MGK0426GLD2', 'WS0426KEL1'
-    ];
     const LINK_FIELDS = [
       { key: 'gform1', label: 'Google Formular 1' },
       { key: 'gtab1',  label: 'Tabelle zu Google Formular 1' },
@@ -534,49 +548,67 @@
       { key: 'props',  label: 'Propstack Formular' }
     ];
 
-    function loadObjekte() {
+    const SPACES = {
+      vermietung: {
+        storageKey: 'immokanzlei.objekte.v1',
+        scrollId: 'objekte-scroll',
+        defaults: ['MB0326OG', 'MB0426OG3', 'MM0426BAD93', 'MS0126APP',
+                   'IN0426APP', 'LD0426OG', 'MGK0426GLD2', 'WS0426KEL1']
+      },
+      verkauf: {
+        storageKey: 'verkauf_objects',
+        scrollId: 'objekte-scroll-verkauf',
+        defaults: []
+      }
+    };
+
+    function cryptoId() {
+      return 'o_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    }
+
+    function loadObjekte(space) {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(space.storageKey);
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) return parsed;
         }
       } catch (e) {}
-      return DEFAULT_OBJEKTE.map(name => ({ id: cryptoId(), name, links: {} }));
+      return space.defaults.map(name => ({ id: cryptoId(), name, links: {} }));
     }
-    function saveObjekte() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.objekte));
-    }
-    function cryptoId() {
-      return 'o_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    function saveObjekte(space) {
+      localStorage.setItem(space.storageKey, JSON.stringify(space.objekte));
     }
 
+    Object.values(SPACES).forEach(space => {
+      space.objekte = loadObjekte(space);
+      space.scrollEl = document.getElementById(space.scrollId);
+      space.renamingId = null;
+    });
+
     const state = {
-      objekte: loadObjekte(),
-      currentEditingId: null,
-      renamingId: null
+      currentSpace: null,
+      currentEditingId: null
     };
 
     /* ---------- OBJEKTE ---------- */
-    const scrollEl = document.getElementById('objekte-scroll');
-
-    function renderObjekte() {
-      scrollEl.innerHTML = '';
-      state.objekte.forEach(obj => scrollEl.appendChild(renderObjektCard(obj)));
+    function renderObjekte(space) {
+      space.scrollEl.innerHTML = '';
+      space.objekte.forEach(obj => space.scrollEl.appendChild(renderObjektCard(space, obj)));
       const addBtn = document.createElement('button');
       addBtn.className = 'objekt-add';
       addBtn.type = 'button';
       addBtn.textContent = '+ Objekt hinzufügen';
-      addBtn.addEventListener('click', addObjekt);
-      scrollEl.appendChild(addBtn);
+      addBtn.addEventListener('click', () => addObjekt(space));
+      space.scrollEl.appendChild(addBtn);
     }
 
-    function renderObjektCard(obj) {
+    function renderObjektCard(space, obj) {
       const card = document.createElement('div');
       card.className = 'objekt-card';
       card.dataset.id = obj.id;
 
-      if (state.renamingId === obj.id) {
+      if (space.renamingId === obj.id) {
         const row = document.createElement('div');
         row.className = 'objekt-rename-row';
         const input = document.createElement('input');
@@ -590,14 +622,14 @@
         const commit = () => {
           const v = input.value.trim();
           if (v) obj.name = v;
-          state.renamingId = null;
-          saveObjekte();
-          renderObjekte();
+          space.renamingId = null;
+          saveObjekte(space);
+          renderObjekte(space);
         };
         save.addEventListener('click', e => { e.stopPropagation(); commit(); });
         input.addEventListener('keydown', e => {
           if (e.key === 'Enter') { e.preventDefault(); commit(); }
-          if (e.key === 'Escape') { state.renamingId = null; renderObjekte(); }
+          if (e.key === 'Escape') { space.renamingId = null; renderObjekte(space); }
         });
         input.addEventListener('click', e => e.stopPropagation());
         row.appendChild(input);
@@ -628,8 +660,8 @@
       editBtn.textContent = '✏️';
       editBtn.addEventListener('click', e => {
         e.stopPropagation();
-        state.renamingId = obj.id;
-        renderObjekte();
+        space.renamingId = obj.id;
+        renderObjekte(space);
       });
 
       actions.appendChild(meta);
@@ -638,16 +670,16 @@
       card.appendChild(name);
       card.appendChild(actions);
 
-      card.addEventListener('click', () => openLinksModal(obj.id));
+      card.addEventListener('click', () => openLinksModal(space, obj.id));
       return card;
     }
 
-    function addObjekt() {
+    function addObjekt(space) {
       const obj = { id: cryptoId(), name: 'Neues Objekt', links: {} };
-      state.objekte.push(obj);
-      state.renamingId = obj.id;
-      saveObjekte();
-      renderObjekte();
+      space.objekte.push(obj);
+      space.renamingId = obj.id;
+      saveObjekte(space);
+      renderObjekte(space);
     }
 
     /* ---------- MODAL ---------- */
@@ -655,9 +687,10 @@
     const modalTitle = document.getElementById('links-modal-title');
     const fieldsWrap = document.getElementById('links-fields');
 
-    function openLinksModal(id) {
-      const obj = state.objekte.find(o => o.id === id);
+    function openLinksModal(space, id) {
+      const obj = space.objekte.find(o => o.id === id);
       if (!obj) return;
+      state.currentSpace = space;
       state.currentEditingId = id;
       modalTitle.textContent = 'Links für ' + obj.name;
       fieldsWrap.innerHTML = '';
@@ -706,18 +739,21 @@
       modal.classList.remove('show');
       modal.setAttribute('aria-hidden', 'true');
       state.currentEditingId = null;
+      state.currentSpace = null;
     }
 
     function saveLinks() {
-      const obj = state.objekte.find(o => o.id === state.currentEditingId);
+      const space = state.currentSpace;
+      if (!space) return;
+      const obj = space.objekte.find(o => o.id === state.currentEditingId);
       if (!obj) return;
       obj.links = obj.links || {};
       fieldsWrap.querySelectorAll('input[type="url"]').forEach(inp => {
         obj.links[inp.dataset.key] = inp.value.trim();
       });
-      saveObjekte();
+      saveObjekte(space);
       closeLinksModal();
-      renderObjekte();
+      renderObjekte(space);
       showToast('Gespeichert');
     }
 
@@ -787,16 +823,60 @@
       { n: 18, text: 'Übergabe der Wohnung und Übergabeprotokoll erstellen.', badges: ['Mathieu', 'Liana'] }
     ];
 
+    const VERKAUF_STEPS = [
+      { n: 1,  text: 'Der Kunde wendet sich an unser Unternehmen, um ein Immobilienobjekt zu verkaufen.', badges: [] },
+      { n: 2,  text: 'Geplanter Aufnahmetermin.', badges: [] },
+      { n: 3,  text: 'Aufnahmetermin.', badges: ['Markus', 'Mathieu'] },
+      { n: 4,  text: 'WhatsApp-Gruppen erstellen.', badges: ['Mathieu'] },
+      { n: 5,  text: 'Propstackanlage.', badges: ['Mathieu'] },
+      { n: 6,  text: 'Fotos Propstack.', badges: ['Olja'] },
+      { n: 7,  text: 'WhatsApp-Gruppe anlegen.', badges: ['Liana'] },
+      { n: 8,  text: 'Finaler Check.', badges: ['Markus'] },
+      { n: 9,  text: 'Online stellen + Eigentümerreport.', badges: ['Mathieu'] },
+      { n: 10, text: 'Instagram Story Posting.', badges: ['Liana'] },
+      { n: 11, text: 'Ggf. Ortenaulocate.', badges: ['Liana'] },
+      { n: 12, text: 'Verkäufer findet Käufer.', badges: ['Makler'] },
+      { n: 13, text: 'Verkäufer versendet zur Unterschrift an Käufer: Vollmacht Notar / Reservierungsvereinbarung.', badges: ['Makler'] },
+      { n: 14, text: 'Reservierungsvereinbarung unterschrieben.', badges: ['Kunde'] },
+      { n: 15, text: 'Verkäufer füllt Tabelle „Kaufangebot-Zusage vom Käufer" aus.', badges: ['Makler'] },
+      { n: 16, text: 'Kaution / Freigabe erhalten.', badges: ['Markus'] },
+      { n: 17, text: 'Google Forms an Käufer und Verkäufer zur Erfassung der Notardaten versenden.', badges: ['Ksenya'] },
+      { n: 18, text: 'Notartermin vereinbaren, Notardatenblatt ausfüllen und an Notar senden.', badges: ['Ksenya'] },
+      { n: 19, text: 'Notartermin-Datum per E-Mail an Käufer, Verkäufer senden und in Kalender von Markus, Makler und Verkäufer eintragen.', badges: ['Ksenya'] },
+      { n: 20, text: 'Kaufvertragsentwurf zur Prüfung an Makler, Käufer und Verkäufer versenden.', badges: ['Ksenya'] },
+      { n: 21, text: 'Terminerinnerung.', badges: ['Liana'] },
+      { n: 22, text: 'Grundschuld erhalten / versendet.', badges: ['Makler'] },
+      { n: 23, text: 'Verkauft und unterschrieben vor dem Notar.', badges: ['Kunde'] },
+      { n: 24, text: 'Rechnungen (Maklercourtage) schreiben.', badges: ['Jennifer'] },
+      { n: 25, text: 'Rechnung erstellt.', badges: ['Jennifer'] },
+      { n: 26, text: 'Zahlungserinnerung.', badges: ['Jennifer'] },
+      { n: 27, text: 'Rechnung bezahlt.', badges: ['Markus'] },
+      { n: 28, text: 'Google Form für Bewertung erstellen.', badges: ['Ksenya'] },
+      { n: 29, text: 'Postkarten.', badges: ['Sidra'] },
+      { n: 30, text: 'Kaufpreiszahlung eingegangen.', badges: ['Verkäufer'] },
+      { n: 31, text: 'Übergabe planen.', badges: ['Liana'] },
+      { n: 32, text: 'Übergabe durchführen.', badges: ['Mathieu'] },
+      { n: 33, text: 'Übergabeprotokoll an Käufer, Verkäufer und Hausverwaltung per Mail schicken.', badges: [] },
+      { n: 34, text: 'Akte schließen: Immobilie als verkauft bei Propstack markieren und Unterlagen ablegen und Fach auflösen. Ordner in Google Drive auf „erledigt" schieben.', badges: ['Mathieu'] }
+    ];
+
     const BADGE_CLASS = {
       Ksenya: 'badge-ksenya',
       Liana: 'badge-liana',
-      Mathieu: 'badge-mathieu'
+      Mathieu: 'badge-mathieu',
+      Markus: 'badge-markus',
+      Olja: 'badge-olja',
+      Makler: 'badge-makler',
+      Jennifer: 'badge-jennifer',
+      Sidra: 'badge-sidra',
+      Kunde: 'badge-neutral',
+      'Verkäufer': 'badge-neutral'
     };
 
-    function renderSteps() {
-      const list = document.getElementById('steps-list');
+    function renderSteps(listId, steps) {
+      const list = document.getElementById(listId);
       list.innerHTML = '';
-      STEPS.forEach(step => {
+      steps.forEach(step => {
         const li = document.createElement('li');
         li.className = 'step-card';
 
@@ -871,8 +951,10 @@
     }
 
     /* ---------- INIT ---------- */
-    renderObjekte();
-    renderSteps();
+    renderObjekte(SPACES.vermietung);
+    renderObjekte(SPACES.verkauf);
+    renderSteps('steps-list', STEPS);
+    renderSteps('steps-list-verkauf', VERKAUF_STEPS);
   })();
   </script>
 </body>
