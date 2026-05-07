@@ -466,11 +466,24 @@
     @media (max-width: 600px) {
       .container { padding: 16px 14px 64px; }
       .step-card { flex-wrap: wrap; }
+      .step-body {
+        flex: 1 1 calc(100% - 48px);
+        min-width: 0;
+        max-width: calc(100% - 48px);
+      }
       .step-badges {
+        flex: 1 1 100%;
         max-width: 100%;
         justify-content: flex-start;
         margin-left: 48px;
-        margin-top: 4px;
+        margin-top: 8px;
+      }
+      .template-block {
+        font-size: 13px;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        overflow-x: auto;
+        max-width: 100%;
       }
       .objekt-card, .objekt-add { min-width: 150px; }
       h1.page-title { font-size: 1.4rem; }
@@ -552,12 +565,14 @@
       vermietung: {
         storageKey: 'immokanzlei.objekte.v1',
         scrollId: 'objekte-scroll',
+        hasLinks: true,
         defaults: ['MB0326OG', 'MB0426OG3', 'MM0426BAD93', 'MS0126APP',
                    'IN0426APP', 'LD0426OG', 'MGK0426GLD2', 'WS0426KEL1']
       },
       verkauf: {
         storageKey: 'verkauf_objects',
         scrollId: 'objekte-scroll-verkauf',
+        hasLinks: false,
         defaults: []
       }
     };
@@ -646,11 +661,18 @@
 
       const actions = document.createElement('div');
       actions.className = 'objekt-card-actions';
-      const filled = LINK_FIELDS.filter(f => (obj.links || {})[f.key]).length;
-      const meta = document.createElement('span');
-      meta.style.fontSize = '0.78rem';
-      meta.style.color = 'var(--muted)';
-      meta.textContent = filled + ' / ' + LINK_FIELDS.length + ' Links';
+
+      if (space.hasLinks) {
+        const filled = LINK_FIELDS.filter(f => (obj.links || {})[f.key]).length;
+        const meta = document.createElement('span');
+        meta.style.fontSize = '0.78rem';
+        meta.style.color = 'var(--muted)';
+        meta.textContent = filled + ' / ' + LINK_FIELDS.length + ' Links';
+        actions.appendChild(meta);
+      } else {
+        const spacer = document.createElement('span');
+        actions.appendChild(spacer);
+      }
 
       const editBtn = document.createElement('button');
       editBtn.className = 'objekt-edit-btn';
@@ -664,13 +686,16 @@
         renderObjekte(space);
       });
 
-      actions.appendChild(meta);
       actions.appendChild(editBtn);
 
       card.appendChild(name);
       card.appendChild(actions);
 
-      card.addEventListener('click', () => openLinksModal(space, obj.id));
+      if (space.hasLinks) {
+        card.addEventListener('click', () => openLinksModal(space, obj.id));
+      } else {
+        card.style.cursor = 'default';
+      }
       return card;
     }
 
