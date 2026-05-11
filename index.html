@@ -276,7 +276,124 @@
       margin: 8px 0 6px;
       padding-left: 10px;
       border-left: 3px solid var(--gold);
+      cursor: pointer;
+      display: inline-block;
+      border-radius: 2px;
+      transition: color 0.12s ease;
     }
+    .objekt-group-heading .group-count {
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .objekt-group-heading:hover { color: #000; }
+    .objekt-group-heading:hover .group-count { color: var(--text); }
+    .objekt-group-edit-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin: 8px 0 6px;
+      flex-wrap: wrap;
+    }
+    .objekt-group-edit-row input {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      color: var(--text);
+      min-width: 160px;
+    }
+    .objekt-group-edit-row input:focus { outline: 2px solid var(--gold); outline-offset: 0; border-color: var(--gold); }
+    .btn-link-danger {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .btn-link-danger:hover { color: #c0392b; }
+    .btn-link-quiet {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .btn-link-quiet:hover { color: var(--text); }
+    .add-seller-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 4px 2px;
+      margin-top: 4px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .add-seller-btn:hover { color: var(--text); }
+
+    .objekt-move-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 2px 4px;
+      color: var(--muted);
+      border-radius: 6px;
+    }
+    .objekt-move-btn:hover { background: var(--gold-soft); color: var(--text); }
+    .move-popover {
+      position: absolute;
+      top: 100%;
+      right: 8px;
+      margin-top: 4px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      padding: 6px;
+      z-index: 50;
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .move-popover-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 4px 8px 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .move-popover-item {
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 7px 10px;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .move-popover-item:hover { background: var(--gold-soft); }
+    .move-popover-empty {
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
     a.section-link-heading {
       text-decoration: none;
       color: inherit;
@@ -572,18 +689,8 @@
              href="https://docs.google.com/spreadsheets/d/1-RiMZbJaePKK2xGFgLIZMpWm_-_jrea5YONUPc_CIKY/edit?usp=sharing"
              target="_blank" rel="noopener">Aktuelle Objekte</a>
         </h2>
-        <div class="objekt-group">
-          <div class="objekt-group-heading">Mario</div>
-          <div class="objekte-scroll" id="objekte-scroll-verkauf-mario"></div>
-        </div>
-        <div class="objekt-group">
-          <div class="objekt-group-heading">Markus</div>
-          <div class="objekte-scroll" id="objekte-scroll-verkauf-markus"></div>
-        </div>
-        <div class="objekt-group">
-          <div class="objekt-group-heading">Immokanzlei Team</div>
-          <div class="objekte-scroll" id="objekte-scroll-verkauf-team"></div>
-        </div>
+        <div id="verkauf-sellers"></div>
+        <button class="add-seller-btn" id="add-seller-btn" type="button">+ Verkäufer hinzufügen</button>
       </section>
 
       <section class="anleitung-section">
@@ -628,6 +735,45 @@
       { key: 'props',  label: 'Propstack Formular' }
     ];
 
+    const SELLERS_KEY = 'verkauf_sellers';
+    const DEFAULT_SELLERS = [
+      { id: 'mario', name: 'Mario' },
+      { id: 'markus', name: 'Markus' },
+      { id: 'team', name: 'Immokanzlei Team' }
+    ];
+
+    function sellerStorageKey(id) { return 'verkauf_objects_' + id; }
+
+    function loadSellers() {
+      try {
+        const raw = localStorage.getItem(SELLERS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) return parsed;
+        }
+      } catch (e) {}
+      return DEFAULT_SELLERS.slice();
+    }
+    function saveSellers() {
+      localStorage.setItem(SELLERS_KEY, JSON.stringify(verkaufSellers));
+    }
+
+    const verkaufSellers = loadSellers();
+    const verkaufSpaces = {};
+
+    function makeVerkaufSpace(seller) {
+      return {
+        sellerId: seller.id,
+        sellerName: seller.name,
+        storageKey: sellerStorageKey(seller.id),
+        hasLinks: false,
+        defaults: [],
+        renamingId: null,
+        objekte: null,
+        scrollEl: null
+      };
+    }
+
     const SPACES = {
       vermietung: {
         storageKey: 'immokanzlei.objekte.v1',
@@ -635,24 +781,6 @@
         hasLinks: true,
         defaults: ['MB0326OG', 'MB0426OG3', 'MM0426BAD93', 'MS0126APP',
                    'IN0426APP', 'LD0426OG', 'MGK0426GLD2', 'WS0426KEL1']
-      },
-      verkauf_mario: {
-        storageKey: 'verkauf_objects_mario',
-        scrollId: 'objekte-scroll-verkauf-mario',
-        hasLinks: false,
-        defaults: []
-      },
-      verkauf_markus: {
-        storageKey: 'verkauf_objects_markus',
-        scrollId: 'objekte-scroll-verkauf-markus',
-        hasLinks: false,
-        defaults: []
-      },
-      verkauf_team: {
-        storageKey: 'verkauf_objects_team',
-        scrollId: 'objekte-scroll-verkauf-team',
-        hasLinks: false,
-        defaults: []
       }
     };
 
@@ -680,13 +808,22 @@
       space.renamingId = null;
     });
 
+    verkaufSellers.forEach(seller => {
+      const space = makeVerkaufSpace(seller);
+      space.objekte = loadObjekte(space);
+      verkaufSpaces[seller.id] = space;
+    });
+
     const state = {
       currentSpace: null,
-      currentEditingId: null
+      currentEditingId: null,
+      editingSellerId: null,
+      movePopoverFor: null
     };
 
     /* ---------- OBJEKTE ---------- */
     function renderObjekte(space) {
+      if (!space.scrollEl) return;
       space.scrollEl.innerHTML = '';
       space.objekte.forEach(obj => space.scrollEl.appendChild(renderObjektCard(space, obj)));
       const addBtn = document.createElement('button');
@@ -695,12 +832,21 @@
       addBtn.textContent = '+ Objekt hinzufügen';
       addBtn.addEventListener('click', () => addObjekt(space));
       space.scrollEl.appendChild(addBtn);
+      if (space.sellerId) updateSellerCount(space.sellerId);
+    }
+
+    function updateSellerCount(sellerId) {
+      const el = document.querySelector('[data-seller-count="' + sellerId + '"]');
+      if (!el) return;
+      const space = verkaufSpaces[sellerId];
+      el.textContent = '(' + (space ? space.objekte.length : 0) + ')';
     }
 
     function renderObjektCard(space, obj) {
       const card = document.createElement('div');
       card.className = 'objekt-card';
       card.dataset.id = obj.id;
+      card.style.position = 'relative';
 
       if (space.renamingId === obj.id) {
         const row = document.createElement('div');
@@ -783,6 +929,19 @@
         }
       });
 
+      if (space.sellerId && verkaufSellers.length > 1) {
+        const moveBtn = document.createElement('button');
+        moveBtn.className = 'objekt-move-btn';
+        moveBtn.type = 'button';
+        moveBtn.title = 'Verschieben';
+        moveBtn.setAttribute('aria-label', 'Verschieben');
+        moveBtn.textContent = '↪';
+        moveBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          toggleMovePopover(card, space, obj);
+        });
+        icons.appendChild(moveBtn);
+      }
       icons.appendChild(editBtn);
       icons.appendChild(deleteBtn);
       actions.appendChild(icons);
@@ -1145,11 +1304,211 @@
       });
     }
 
+    /* ---------- VERKAUF SELLER MANAGEMENT ---------- */
+    const sellersContainer = document.getElementById('verkauf-sellers');
+
+    function makeSellerId(name) {
+      const base = (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      const stem = base || 'seller';
+      let id = stem;
+      let i = 2;
+      while (verkaufSpaces[id]) { id = stem + '_' + i; i++; }
+      return id;
+    }
+
+    function renderVerkaufGroups() {
+      closeMovePopover();
+      sellersContainer.innerHTML = '';
+      verkaufSellers.forEach(seller => {
+        const space = verkaufSpaces[seller.id];
+        const group = document.createElement('div');
+        group.className = 'objekt-group';
+        group.dataset.sellerId = seller.id;
+
+        if (state.editingSellerId === seller.id) {
+          const editRow = document.createElement('div');
+          editRow.className = 'objekt-group-edit-row';
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = seller.name;
+          input.setAttribute('aria-label', 'Verkäufername');
+
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'btn-mini';
+          saveBtn.type = 'button';
+          saveBtn.textContent = 'Speichern';
+          const commit = () => {
+            const v = input.value.trim();
+            if (v) {
+              seller.name = v;
+              space.sellerName = v;
+              saveSellers();
+            }
+            state.editingSellerId = null;
+            renderVerkaufGroups();
+          };
+          saveBtn.addEventListener('click', commit);
+          input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            if (e.key === 'Escape') { state.editingSellerId = null; renderVerkaufGroups(); }
+          });
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'btn-link-quiet';
+          cancelBtn.type = 'button';
+          cancelBtn.textContent = 'Abbrechen';
+          cancelBtn.addEventListener('click', () => {
+            state.editingSellerId = null;
+            renderVerkaufGroups();
+          });
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn-link-danger';
+          deleteBtn.type = 'button';
+          deleteBtn.textContent = 'Löschen';
+          deleteBtn.addEventListener('click', () => {
+            const count = space.objekte.length;
+            const msg = count > 0
+              ? 'Verkäufer „' + seller.name + '" und ' + count + ' Objekt(e) wirklich löschen?'
+              : 'Verkäufer „' + seller.name + '" wirklich löschen?';
+            if (!confirm(msg)) return;
+            localStorage.removeItem(space.storageKey);
+            delete verkaufSpaces[seller.id];
+            const idx = verkaufSellers.findIndex(s => s.id === seller.id);
+            if (idx >= 0) verkaufSellers.splice(idx, 1);
+            saveSellers();
+            state.editingSellerId = null;
+            renderVerkaufGroups();
+          });
+
+          editRow.appendChild(input);
+          editRow.appendChild(saveBtn);
+          editRow.appendChild(cancelBtn);
+          editRow.appendChild(deleteBtn);
+          group.appendChild(editRow);
+          setTimeout(() => input.focus(), 0);
+        } else {
+          const heading = document.createElement('div');
+          heading.className = 'objekt-group-heading';
+          heading.title = 'Klicken zum Bearbeiten';
+          heading.setAttribute('role', 'button');
+          heading.setAttribute('tabindex', '0');
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = seller.name + ' ';
+          const countSpan = document.createElement('span');
+          countSpan.className = 'group-count';
+          countSpan.setAttribute('data-seller-count', seller.id);
+          countSpan.textContent = '(' + space.objekte.length + ')';
+          heading.appendChild(nameSpan);
+          heading.appendChild(countSpan);
+          heading.addEventListener('click', () => {
+            state.editingSellerId = seller.id;
+            renderVerkaufGroups();
+          });
+          heading.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              state.editingSellerId = seller.id;
+              renderVerkaufGroups();
+            }
+          });
+          group.appendChild(heading);
+        }
+
+        const scroll = document.createElement('div');
+        scroll.className = 'objekte-scroll';
+        group.appendChild(scroll);
+        space.scrollEl = scroll;
+
+        sellersContainer.appendChild(group);
+        renderObjekte(space);
+      });
+    }
+
+    document.getElementById('add-seller-btn').addEventListener('click', () => {
+      const name = prompt('Name des Verkäufers');
+      if (!name) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      const id = makeSellerId(trimmed);
+      const seller = { id, name: trimmed };
+      verkaufSellers.push(seller);
+      saveSellers();
+      const space = makeVerkaufSpace(seller);
+      space.objekte = loadObjekte(space);
+      verkaufSpaces[id] = space;
+      renderVerkaufGroups();
+    });
+
+    /* ---------- MOVE POPOVER ---------- */
+    function closeMovePopover() {
+      document.querySelectorAll('.move-popover').forEach(p => p.remove());
+      state.movePopoverFor = null;
+    }
+
+    function toggleMovePopover(card, fromSpace, obj) {
+      const existing = card.querySelector('.move-popover');
+      closeMovePopover();
+      if (existing) return;
+
+      const pop = document.createElement('div');
+      pop.className = 'move-popover';
+      pop.addEventListener('click', e => e.stopPropagation());
+
+      const label = document.createElement('div');
+      label.className = 'move-popover-label';
+      label.textContent = 'Verschieben zu';
+      pop.appendChild(label);
+
+      const others = verkaufSellers.filter(s => s.id !== fromSpace.sellerId);
+      if (others.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'move-popover-empty';
+        empty.textContent = 'Keine anderen Verkäufer';
+        pop.appendChild(empty);
+      } else {
+        others.forEach(s => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'move-popover-item';
+          item.textContent = s.name;
+          item.addEventListener('click', () => {
+            moveObjektToSeller(fromSpace, obj.id, s.id);
+          });
+          pop.appendChild(item);
+        });
+      }
+
+      card.appendChild(pop);
+      state.movePopoverFor = obj.id;
+    }
+
+    function moveObjektToSeller(fromSpace, objId, toSellerId) {
+      const toSpace = verkaufSpaces[toSellerId];
+      if (!toSpace) return;
+      const idx = fromSpace.objekte.findIndex(o => o.id === objId);
+      if (idx < 0) return;
+      const [moved] = fromSpace.objekte.splice(idx, 1);
+      toSpace.objekte.push(moved);
+      saveObjekte(fromSpace);
+      saveObjekte(toSpace);
+      closeMovePopover();
+      renderObjekte(fromSpace);
+      renderObjekte(toSpace);
+    }
+
+    document.addEventListener('click', e => {
+      if (state.movePopoverFor && !e.target.closest('.move-popover') && !e.target.closest('.objekt-move-btn')) {
+        closeMovePopover();
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && state.movePopoverFor) closeMovePopover();
+    });
+
     /* ---------- INIT ---------- */
     renderObjekte(SPACES.vermietung);
-    renderObjekte(SPACES.verkauf_mario);
-    renderObjekte(SPACES.verkauf_markus);
-    renderObjekte(SPACES.verkauf_team);
+    renderVerkaufGroups();
 
     const orderedVermietung = loadStepOrder('immokanzlei.steps.vermietung.order', STEPS);
     const orderedVerkauf = loadStepOrder('immokanzlei.steps.verkauf.order', VERKAUF_STEPS);
