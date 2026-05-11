@@ -176,6 +176,17 @@
       border-radius: 6px;
     }
     .objekt-edit-btn:hover { background: var(--gold-soft); color: var(--text); }
+    .objekt-delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 2px 4px;
+      color: var(--muted);
+      border-radius: 6px;
+    }
+    .objekt-delete-btn:hover { background: #fde0e0; color: #c0392b; }
+    .objekt-icons { display: flex; gap: 2px; }
     .objekt-rename-row {
       display: flex;
       gap: 6px;
@@ -226,13 +237,52 @@
     .step-card {
       display: flex;
       align-items: flex-start;
-      gap: 14px;
+      gap: 12px;
       background: #fff;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--card-shadow);
       padding: 14px 16px;
+      transition: opacity 0.15s ease, transform 0.15s ease;
     }
+    .step-card.dragging { opacity: 0.4; }
+    .step-card.drag-over {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px var(--gold-soft), var(--card-shadow);
+    }
+    .step-drag-handle {
+      flex: 0 0 auto;
+      width: 18px;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1;
+      user-select: none;
+      border-radius: 6px;
+    }
+    .step-drag-handle:hover { color: var(--text); background: var(--gold-soft); }
+    .step-drag-handle:active { cursor: grabbing; }
+
+    /* OBJEKT GROUPS (Verkauf) */
+    .objekt-group { margin-bottom: 18px; }
+    .objekt-group-heading {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 8px 0 6px;
+      padding-left: 10px;
+      border-left: 3px solid var(--gold);
+    }
+    a.section-link-heading {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    a.section-link-heading:hover { text-decoration: underline; text-underline-offset: 4px; }
     .step-number {
       flex: 0 0 auto;
       width: 34px;
@@ -465,17 +515,17 @@
     /* RESPONSIVE */
     @media (max-width: 600px) {
       .container { padding: 16px 14px 64px; }
-      .step-card { flex-wrap: wrap; }
+      .step-card { flex-wrap: wrap; gap: 10px; }
       .step-body {
-        flex: 1 1 calc(100% - 48px);
+        flex: 1 1 calc(100% - 76px);
         min-width: 0;
-        max-width: calc(100% - 48px);
+        max-width: calc(100% - 76px);
       }
       .step-badges {
         flex: 1 1 100%;
         max-width: 100%;
         justify-content: flex-start;
-        margin-left: 48px;
+        margin-left: 64px;
         margin-top: 8px;
       }
       .template-block {
@@ -517,8 +567,23 @@
 
     <section class="tab-pane" id="tab-verkauf" role="tabpanel">
       <section class="objekte-section">
-        <h2 class="section-heading">Aktuelle Objekte</h2>
-        <div class="objekte-scroll" id="objekte-scroll-verkauf"></div>
+        <h2 class="section-heading">
+          <a class="section-link-heading"
+             href="https://docs.google.com/spreadsheets/d/1-RiMZbJaePKK2xGFgLIZMpWm_-_jrea5YONUPc_CIKY/edit?usp=sharing"
+             target="_blank" rel="noopener">Aktuelle Objekte</a>
+        </h2>
+        <div class="objekt-group">
+          <div class="objekt-group-heading">Mario</div>
+          <div class="objekte-scroll" id="objekte-scroll-verkauf-mario"></div>
+        </div>
+        <div class="objekt-group">
+          <div class="objekt-group-heading">Markus</div>
+          <div class="objekte-scroll" id="objekte-scroll-verkauf-markus"></div>
+        </div>
+        <div class="objekt-group">
+          <div class="objekt-group-heading">Immokanzlei Team</div>
+          <div class="objekte-scroll" id="objekte-scroll-verkauf-team"></div>
+        </div>
       </section>
 
       <section class="anleitung-section">
@@ -558,6 +623,8 @@
       { key: 'gtab1',  label: 'Tabelle zu Google Formular 1' },
       { key: 'gform2', label: 'Google Formular 2' },
       { key: 'gtab2',  label: 'Tabelle zu Google Formular 2' },
+      { key: 'gform3', label: 'Google Formular 3' },
+      { key: 'gtab3',  label: 'Tabelle zu Google Formular 3' },
       { key: 'props',  label: 'Propstack Formular' }
     ];
 
@@ -569,9 +636,21 @@
         defaults: ['MB0326OG', 'MB0426OG3', 'MM0426BAD93', 'MS0126APP',
                    'IN0426APP', 'LD0426OG', 'MGK0426GLD2', 'WS0426KEL1']
       },
-      verkauf: {
-        storageKey: 'verkauf_objects',
-        scrollId: 'objekte-scroll-verkauf',
+      verkauf_mario: {
+        storageKey: 'verkauf_objects_mario',
+        scrollId: 'objekte-scroll-verkauf-mario',
+        hasLinks: false,
+        defaults: []
+      },
+      verkauf_markus: {
+        storageKey: 'verkauf_objects_markus',
+        scrollId: 'objekte-scroll-verkauf-markus',
+        hasLinks: false,
+        defaults: []
+      },
+      verkauf_team: {
+        storageKey: 'verkauf_objects_team',
+        scrollId: 'objekte-scroll-verkauf-team',
         hasLinks: false,
         defaults: []
       }
@@ -674,6 +753,9 @@
         actions.appendChild(spacer);
       }
 
+      const icons = document.createElement('div');
+      icons.className = 'objekt-icons';
+
       const editBtn = document.createElement('button');
       editBtn.className = 'objekt-edit-btn';
       editBtn.type = 'button';
@@ -686,7 +768,24 @@
         renderObjekte(space);
       });
 
-      actions.appendChild(editBtn);
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'objekt-delete-btn';
+      deleteBtn.type = 'button';
+      deleteBtn.title = 'Löschen';
+      deleteBtn.setAttribute('aria-label', 'Löschen');
+      deleteBtn.textContent = '🗑️';
+      deleteBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (confirm('Objekt „' + obj.name + '" wirklich löschen?')) {
+          space.objekte = space.objekte.filter(o => o.id !== obj.id);
+          saveObjekte(space);
+          renderObjekte(space);
+        }
+      });
+
+      icons.appendChild(editBtn);
+      icons.appendChild(deleteBtn);
+      actions.appendChild(icons);
 
       card.appendChild(name);
       card.appendChild(actions);
@@ -826,63 +925,65 @@
 'Mit freundlichen Grüßen,';
 
     const STEPS = [
-      { n: 1, text: 'Der Kunde möchte die Wohnung vermieten.', badges: [] },
-      { n: 2, text: 'Wir fotografieren die Wohnung.', badges: [] },
-      { n: 3, text: 'Wir erstellen eine Objektanlage in Propstack.', badges: ['Mathieu', 'Liana'] },
-      { n: 4, text: 'Wir stellen die Immobilie online: Das Objekt wird auf den Portalen eingestellt und sichtbar gemacht.', badges: ['Mathieu', 'Liana'] },
-      { n: 5, text: 'Wir erstellen 2 Google-Formulare und eine gemeinsame Tabelle, um zu verfolgen, wem bereits das erste Google-Formular gesendet wurde.', badges: ['Ksenya'] },
-      { n: 6, text: 'Kundenanfragen.', badges: [] },
-      { n: 7, text: 'Kunden rufen an – wir bitten sie, sich über das Portal zu bewerben.', badges: ['Mathieu', 'Liana'] },
-      { n: 8, text: 'Google-Formular versenden: Allen Kunden, die sich über das Portal beworben haben, senden wir das erste Google-Formular.', badges: ['Ksenya'] },
-      { n: 9, text: 'Kundenkategorisierung: Die Kunden werden in der Tabelle zum Google-Formular in die Kategorien A, B und C eingeteilt.', badges: [] },
-      { n: 10, text: 'Dokumente von Kunden der Kategorie A anfordern: Kunden der Kategorie A erhalten innerhalb von 48 Stunden ein weiteres Google-Formular, in dem sie folgende Unterlagen hochladen müssen:',
+      { id: 'v1',  text: 'Der Kunde möchte die Wohnung vermieten.', badges: [] },
+      { id: 'v2',  text: 'Wir fotografieren die Wohnung.', badges: [] },
+      { id: 'v3',  text: 'Wir erstellen eine Objektanlage in Propstack.', badges: ['Mathieu'] },
+      { id: 'v3a', text: 'WhatsApp-Gruppe anlegen.', badges: ['Liana'] },
+      { id: 'v3b', text: 'Finaler Check.', badges: ['Markus'] },
+      { id: 'v4',  text: 'Wir stellen die Immobilie online: Das Objekt wird auf den Portalen eingestellt und sichtbar gemacht.', badges: ['Mathieu'] },
+      { id: 'v5',  text: 'Wir erstellen 2 Google-Formulare und eine gemeinsame Tabelle, um zu verfolgen, wem bereits das erste Google-Formular gesendet wurde.', badges: ['Ksenya'] },
+      { id: 'v6',  text: 'Kundenanfragen.', badges: [] },
+      { id: 'v7',  text: 'Kunden rufen an – wir bitten sie, sich über das Portal zu bewerben.', badges: ['Liana'] },
+      { id: 'v8',  text: 'Google-Formular versenden: Allen Kunden, die sich über das Portal beworben haben, senden wir das erste Google-Formular.', badges: ['Ksenya'] },
+      { id: 'v9',  text: 'Kundenkategorisierung: Die Kunden werden in der Tabelle zum Google-Formular in die Kategorien A, B und C eingeteilt.', badges: [] },
+      { id: 'v10', text: 'Dokumente von Kunden der Kategorie A anfordern: Kunden der Kategorie A erhalten innerhalb von 48 Stunden ein weiteres Google-Formular, in dem sie folgende Unterlagen hochladen müssen:',
         sub: ['Lohnabrechnungen (letzte 3 Monate)', 'Gültigen Ausweis'],
         badges: ['Ksenya'] },
-      { n: 11, text: 'Personen, die die Dokumente im zweiten Google-Formular gesendet haben, markieren wir in der ersten Google-Tabelle grün. Personen, denen das zweite Google-Formular gesendet wurde, die es aber noch nicht ausgefüllt haben, markieren wir gelb. Nach einigen Tagen senden wir Personen, die gelb markiert sind (und das Formular noch nicht ausgefüllt haben), das zweite Google-Formular erneut zur Ausfüllung und markieren sie orange. Nach weiteren Tagen, wenn der Kunde orange markiert ist und das Google-Formular immer noch nicht ausgefüllt hat, markieren wir ihn rot.', badges: ['Ksenya', 'Mathieu', 'Liana'] },
-      { n: 12, text: 'Besichtigungstermine: Besichtigungen werden nur mit Kunden vereinbart, die alle Dokumente eingereicht haben. Nach dem Besichtigungstermin müssen diese Kunden in der ersten Tabelle blau markiert werden.', badges: ['Mathieu', 'Liana'] },
-      { n: 13, text: 'Nach der Besichtigung – nächster Schritt nach der Besichtigung.', template: TEMPLATE_TEXT, badges: ['Mathieu', 'Liana'] },
-      { n: 14, text: 'Die Top-3-Kunden werden dem Eigentümer präsentiert; dieser wählt aus.', badges: ['Mathieu', 'Liana'] },
-      { n: 15, text: 'Mietvertrag vorbereiten: Haus- und Grund-Mietvertrag erstellen und dem ausgewählten Mieter zur Unterschrift zusenden.', badges: ['Mathieu', 'Liana'] },
-      { n: 16, text: 'Danach unterschreiben Eigentümer und Mieter.', badges: ['Mathieu', 'Liana'] },
-      { n: 17, text: 'Dem Vermieter eine Rechnung ausstellen.', badges: ['Mathieu', 'Liana'] },
-      { n: 18, text: 'Übergabe der Wohnung und Übergabeprotokoll erstellen.', badges: ['Mathieu', 'Liana'] }
+      { id: 'v11', text: 'Personen, die die Dokumente im zweiten Google-Formular gesendet haben, markieren wir in der ersten Google-Tabelle grün. Personen, denen das zweite Google-Formular gesendet wurde, die es aber noch nicht ausgefüllt haben, markieren wir gelb. Nach einigen Tagen senden wir Personen, die gelb markiert sind (und das Formular noch nicht ausgefüllt haben), das zweite Google-Formular erneut zur Ausfüllung und markieren sie orange. Nach weiteren Tagen, wenn der Kunde orange markiert ist und das Google-Formular immer noch nicht ausgefüllt hat, markieren wir ihn rot.', badges: ['Ksenya', 'Liana'] },
+      { id: 'v12', text: 'Besichtigungstermine: Besichtigungen werden nur mit Kunden vereinbart, die alle Dokumente eingereicht haben. Nach dem Besichtigungstermin müssen diese Kunden in der ersten Tabelle blau markiert werden.', badges: ['Liana'] },
+      { id: 'v13', text: 'Nach der Besichtigung – nächster Schritt nach der Besichtigung. Wir senden ein Google-Formular zum Hochladen der Schufa-Auskunft.', template: TEMPLATE_TEXT, badges: ['Liana'] },
+      { id: 'v14', text: 'Die Top-3-Kunden werden dem Eigentümer präsentiert; dieser wählt aus.', badges: ['Liana'] },
+      { id: 'v15', text: 'Mietvertrag vorbereiten: Haus- und Grund-Mietvertrag erstellen und dem ausgewählten Mieter zur Unterschrift zusenden.', badges: ['Liana'] },
+      { id: 'v16', text: 'Danach unterschreiben Eigentümer und Mieter.', badges: [] },
+      { id: 'v17', text: 'Dem Vermieter eine Rechnung ausstellen.', badges: ['Liana'] },
+      { id: 'v18', text: 'Übergabe der Wohnung und Übergabeprotokoll erstellen.', badges: ['Mathieu'] }
     ];
 
     const VERKAUF_STEPS = [
-      { n: 1,  text: 'Der Kunde wendet sich an unser Unternehmen, um ein Immobilienobjekt zu verkaufen.', badges: [] },
-      { n: 2,  text: 'Geplanter Aufnahmetermin.', badges: [] },
-      { n: 3,  text: 'Aufnahmetermin.', badges: ['Markus', 'Mathieu'] },
-      { n: 4,  text: 'WhatsApp-Gruppen erstellen.', badges: ['Mathieu'] },
-      { n: 5,  text: 'Propstackanlage.', badges: ['Mathieu'] },
-      { n: 6,  text: 'Fotos Propstack.', badges: ['Olja'] },
-      { n: 7,  text: 'WhatsApp-Gruppe anlegen.', badges: ['Liana'] },
-      { n: 8,  text: 'Finaler Check.', badges: ['Markus'] },
-      { n: 9,  text: 'Online stellen + Eigentümerreport.', badges: ['Mathieu'] },
-      { n: 10, text: 'Instagram Story Posting.', badges: ['Liana'] },
-      { n: 11, text: 'Ggf. Ortenaulocate.', badges: ['Liana'] },
-      { n: 12, text: 'Verkäufer findet Käufer.', badges: ['Makler'] },
-      { n: 13, text: 'Verkäufer versendet zur Unterschrift an Käufer: Vollmacht Notar / Reservierungsvereinbarung.', badges: ['Makler'] },
-      { n: 14, text: 'Reservierungsvereinbarung unterschrieben.', badges: ['Kunde'] },
-      { n: 15, text: 'Verkäufer füllt Tabelle „Kaufangebot-Zusage vom Käufer" aus.', badges: ['Makler'] },
-      { n: 16, text: 'Kaution / Freigabe erhalten.', badges: ['Markus'] },
-      { n: 17, text: 'Google Forms an Käufer und Verkäufer zur Erfassung der Notardaten versenden.', badges: ['Ksenya'] },
-      { n: 18, text: 'Notartermin vereinbaren, Notardatenblatt ausfüllen und an Notar senden.', badges: ['Ksenya'] },
-      { n: 19, text: 'Notartermin-Datum per E-Mail an Käufer, Verkäufer senden und in Kalender von Markus, Makler und Verkäufer eintragen.', badges: ['Ksenya'] },
-      { n: 20, text: 'Kaufvertragsentwurf zur Prüfung an Makler, Käufer und Verkäufer versenden.', badges: ['Ksenya'] },
-      { n: 21, text: 'Terminerinnerung.', badges: ['Liana'] },
-      { n: 22, text: 'Grundschuld erhalten / versendet.', badges: ['Makler'] },
-      { n: 23, text: 'Verkauft und unterschrieben vor dem Notar.', badges: ['Kunde'] },
-      { n: 24, text: 'Rechnungen (Maklercourtage) schreiben.', badges: ['Jennifer'] },
-      { n: 25, text: 'Rechnung erstellt.', badges: ['Jennifer'] },
-      { n: 26, text: 'Zahlungserinnerung.', badges: ['Jennifer'] },
-      { n: 27, text: 'Rechnung bezahlt.', badges: ['Markus'] },
-      { n: 28, text: 'Google Form für Bewertung erstellen.', badges: ['Ksenya'] },
-      { n: 29, text: 'Postkarten.', badges: ['Sidra'] },
-      { n: 30, text: 'Kaufpreiszahlung eingegangen.', badges: ['Verkäufer'] },
-      { n: 31, text: 'Übergabe planen.', badges: ['Liana'] },
-      { n: 32, text: 'Übergabe durchführen.', badges: ['Mathieu'] },
-      { n: 33, text: 'Übergabeprotokoll an Käufer, Verkäufer und Hausverwaltung per Mail schicken.', badges: [] },
-      { n: 34, text: 'Akte schließen: Immobilie als verkauft bei Propstack markieren und Unterlagen ablegen und Fach auflösen. Ordner in Google Drive auf „erledigt" schieben.', badges: ['Mathieu'] }
+      { id: 'k1',  text: 'Der Kunde wendet sich an unser Unternehmen, um ein Immobilienobjekt zu verkaufen.', badges: [] },
+      { id: 'k2',  text: 'Geplanter Aufnahmetermin.', badges: [] },
+      { id: 'k3',  text: 'Aufnahmetermin.', badges: ['Markus', 'Mathieu'] },
+      { id: 'k4',  text: 'WhatsApp-Gruppen anlegen.', badges: ['Mathieu'] },
+      { id: 'k5',  text: 'Propstackanlage.', badges: ['Mathieu'] },
+      { id: 'k6',  text: 'Fotos Propstack.', badges: ['Olja'] },
+      { id: 'k7',  text: 'WhatsApp-Gruppe anlegen.', badges: ['Liana'] },
+      { id: 'k8',  text: 'Finaler Check.', badges: ['Markus'] },
+      { id: 'k9',  text: 'Online stellen + Eigentümerreport.', badges: ['Mathieu'] },
+      { id: 'k10', text: 'Instagram Story Posting.', badges: ['Liana'] },
+      { id: 'k11', text: 'Ggf. Ortenaulocate.', badges: ['Liana'] },
+      { id: 'k12', text: 'Verkäufer findet Käufer.', badges: ['Makler'] },
+      { id: 'k13', text: 'Verkäufer versendet zur Unterschrift an Käufer: Vollmacht Notar / Reservierungsvereinbarung.', badges: ['Makler'] },
+      { id: 'k14', text: 'Reservierungsvereinbarung unterschrieben.', badges: ['Kunde'] },
+      { id: 'k15', text: 'Verkäufer füllt Tabelle „Kaufangebot-Zusage vom Käufer" aus.', badges: ['Makler'] },
+      { id: 'k16', text: 'Kaution / Freigabe erhalten.', badges: ['Markus'] },
+      { id: 'k17', text: 'Google Forms an Käufer und Verkäufer zur Erfassung der Notardaten versenden.', badges: ['Ksenya'] },
+      { id: 'k18', text: 'Notartermin vereinbaren, Notardatenblatt ausfüllen und an Notar senden.', badges: ['Ksenya'] },
+      { id: 'k19', text: 'Notartermin-Datum per E-Mail an Käufer, Verkäufer senden und in Kalender von Markus, Makler und Verkäufer eintragen.', badges: ['Ksenya'] },
+      { id: 'k20', text: 'Kaufvertragsentwurf zur Prüfung an Makler, Käufer und Verkäufer versenden.', badges: ['Ksenya'] },
+      { id: 'k21', text: 'Terminerinnerung.', badges: ['Liana'] },
+      { id: 'k22', text: 'Grundschuld erhalten / versendet.', badges: ['Makler'] },
+      { id: 'k23', text: 'Verkauft und unterschrieben vor dem Notar.', badges: ['Kunde'] },
+      { id: 'k24', text: 'Rechnungen (Maklercourtage) schreiben.', badges: ['Jennifer'] },
+      { id: 'k25', text: 'Rechnung erstellt.', badges: ['Jennifer'] },
+      { id: 'k26', text: 'Zahlungserinnerung.', badges: ['Jennifer'] },
+      { id: 'k27', text: 'Rechnung bezahlt.', badges: ['Markus'] },
+      { id: 'k28', text: 'Google Form für Bewertung erstellen.', badges: ['Ksenya'] },
+      { id: 'k29', text: 'Postkarten.', badges: ['Sidra'] },
+      { id: 'k30', text: 'Kaufpreiszahlung eingegangen.', badges: ['Verkäufer'] },
+      { id: 'k31', text: 'Übergabe planen.', badges: ['Liana'] },
+      { id: 'k32', text: 'Übergabe durchführen.', badges: ['Mathieu'] },
+      { id: 'k33', text: 'Übergabeprotokoll an Käufer, Verkäufer und Hausverwaltung per Mail schicken.', badges: [] },
+      { id: 'k34', text: 'Akte schließen: Immobilie als verkauft bei Propstack markieren und Unterlagen ablegen und Fach auflösen. Ordner in Google Drive auf „erledigt" schieben.', badges: ['Mathieu'] }
     ];
 
     const BADGE_CLASS = {
@@ -898,16 +999,52 @@
       'Verkäufer': 'badge-neutral'
     };
 
-    function renderSteps(listId, steps) {
+    function loadStepOrder(orderKey, steps) {
+      let saved = [];
+      try {
+        const raw = localStorage.getItem(orderKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) saved = parsed;
+        }
+      } catch (e) {}
+      const byId = new Map(steps.map(s => [s.id, s]));
+      const ordered = [];
+      const seen = new Set();
+      saved.forEach(id => {
+        if (byId.has(id) && !seen.has(id)) {
+          ordered.push(byId.get(id));
+          seen.add(id);
+        }
+      });
+      steps.forEach(s => {
+        if (!seen.has(s.id)) ordered.push(s);
+      });
+      return ordered;
+    }
+
+    function saveStepOrder(orderKey, steps) {
+      localStorage.setItem(orderKey, JSON.stringify(steps.map(s => s.id)));
+    }
+
+    function renderSteps(listId, steps, orderKey) {
       const list = document.getElementById(listId);
       list.innerHTML = '';
-      steps.forEach(step => {
+      steps.forEach((step, idx) => {
         const li = document.createElement('li');
         li.className = 'step-card';
+        li.dataset.id = step.id;
+        li.draggable = true;
+
+        const handle = document.createElement('div');
+        handle.className = 'step-drag-handle';
+        handle.title = 'Zum Verschieben ziehen';
+        handle.setAttribute('aria-label', 'Zum Verschieben ziehen');
+        handle.textContent = '⋮⋮';
 
         const num = document.createElement('div');
         num.className = 'step-number';
-        num.textContent = step.n;
+        num.textContent = idx + 1;
 
         const body = document.createElement('div');
         body.className = 'step-body';
@@ -968,18 +1105,56 @@
           badges.appendChild(b);
         });
 
+        li.appendChild(handle);
         li.appendChild(num);
         li.appendChild(body);
         li.appendChild(badges);
+
+        li.addEventListener('dragstart', e => {
+          li.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', step.id);
+        });
+        li.addEventListener('dragend', () => {
+          li.classList.remove('dragging');
+          list.querySelectorAll('.step-card.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+        li.addEventListener('dragover', e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if (!li.classList.contains('dragging')) li.classList.add('drag-over');
+        });
+        li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+        li.addEventListener('drop', e => {
+          e.preventDefault();
+          li.classList.remove('drag-over');
+          const draggedId = e.dataTransfer.getData('text/plain');
+          if (!draggedId || draggedId === step.id) return;
+          const fromIdx = steps.findIndex(s => s.id === draggedId);
+          const toIdx = steps.findIndex(s => s.id === step.id);
+          if (fromIdx < 0 || toIdx < 0) return;
+          const [moved] = steps.splice(fromIdx, 1);
+          const targetIdx = steps.findIndex(s => s.id === step.id);
+          const insertAt = fromIdx < toIdx ? targetIdx + 1 : targetIdx;
+          steps.splice(insertAt, 0, moved);
+          saveStepOrder(orderKey, steps);
+          renderSteps(listId, steps, orderKey);
+        });
+
         list.appendChild(li);
       });
     }
 
     /* ---------- INIT ---------- */
     renderObjekte(SPACES.vermietung);
-    renderObjekte(SPACES.verkauf);
-    renderSteps('steps-list', STEPS);
-    renderSteps('steps-list-verkauf', VERKAUF_STEPS);
+    renderObjekte(SPACES.verkauf_mario);
+    renderObjekte(SPACES.verkauf_markus);
+    renderObjekte(SPACES.verkauf_team);
+
+    const orderedVermietung = loadStepOrder('immokanzlei.steps.vermietung.order', STEPS);
+    const orderedVerkauf = loadStepOrder('immokanzlei.steps.verkauf.order', VERKAUF_STEPS);
+    renderSteps('steps-list', orderedVermietung, 'immokanzlei.steps.vermietung.order');
+    renderSteps('steps-list-verkauf', orderedVerkauf, 'immokanzlei.steps.verkauf.order');
   })();
   </script>
 </body>
