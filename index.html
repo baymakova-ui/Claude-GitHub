@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Betriebsprozesse bei Immokanzlei</title>
+  <title>Ablaufprozesse bei der Immokanzlei</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -661,7 +661,7 @@
   <div class="container">
     <header class="site-header">
       <img class="logo" src="https://immokanzlei24.de/wp-content/uploads/2025/03/Logo-Immokanzlei-GmbH-transparent-e1742371123325-300x183.png" alt="Immokanzlei GmbH" />
-      <h1 class="page-title">Betriebsprozesse bei Immokanzlei</h1>
+      <h1 class="page-title">Ablaufprozesse bei der Immokanzlei</h1>
       <p class="page-subtitle">Interne Arbeitsanleitungen &amp; Objektübersicht</p>
     </header>
 
@@ -702,7 +702,8 @@
     <footer class="site-footer">
       © 2025 Immokanzlei GmbH ·
       <a href="https://immokanzlei24.de/impressum/" target="_blank" rel="noopener">Impressum</a> ·
-      <a href="https://immokanzlei24.de/datenschutzerklaerung/" target="_blank" rel="noopener">Datenschutz</a>
+      <a href="https://immokanzlei24.de/datenschutzerklaerung/" target="_blank" rel="noopener">Datenschutz</a> ·
+      <a href="#" id="open-export" rel="noopener">Daten exportieren</a>
     </footer>
   </div>
 
@@ -719,11 +720,37 @@
     </div>
   </div>
 
+  <!-- Export modal -->
+  <div class="modal-overlay" id="export-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <button class="modal-close" id="export-modal-close" aria-label="Schließen">×</button>
+      <h2>Daten exportieren</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin:-4px 0 12px;">Kopieren Sie diesen Text und senden Sie ihn dem Entwickler, damit alle Nutzer dieselben Objekte und Links sehen.</p>
+      <textarea id="export-textarea" readonly style="width:100%;min-height:280px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.8rem;padding:10px;border:1px solid var(--border);border-radius:8px;resize:vertical;"></textarea>
+      <div class="modal-actions">
+        <button class="btn-outline btn" id="export-copy">In Zwischenablage</button>
+        <button class="btn" id="export-close">Schließen</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
   (function () {
     'use strict';
+
+    // Geteilte Anfangsdaten — werden geladen, wenn ein Browser noch keine
+    // eigenen Daten in localStorage hat. Damit alle Nutzer dieselbe
+    // Ausgangsbasis sehen, kann der Inhalt dieser Konstante über die
+    // Export-Funktion exportiert und hier eingefügt werden.
+    const INITIAL_DATA = {
+      vermietung_objekte: null,
+      verkauf_sellers: null,
+      verkauf_objects: {},
+      steps_vermietung_order: null,
+      steps_verkauf_order: null
+    };
 
     const LINK_FIELDS = [
       { key: 'gform1', label: 'Google Formular 1' },
@@ -752,6 +779,9 @@
           if (Array.isArray(parsed) && parsed.length) return parsed;
         }
       } catch (e) {}
+      if (Array.isArray(INITIAL_DATA.verkauf_sellers) && INITIAL_DATA.verkauf_sellers.length) {
+        return INITIAL_DATA.verkauf_sellers.map(s => ({ id: s.id, name: s.name }));
+      }
       return DEFAULT_SELLERS.slice();
     }
     function saveSellers() {
@@ -796,7 +826,20 @@
           if (Array.isArray(parsed)) return parsed;
         }
       } catch (e) {}
+      if (space.storageKey === 'immokanzlei.objekte.v1' && Array.isArray(INITIAL_DATA.vermietung_objekte)) {
+        return cloneObjekte(INITIAL_DATA.vermietung_objekte);
+      }
+      if (space.sellerId && INITIAL_DATA.verkauf_objects && Array.isArray(INITIAL_DATA.verkauf_objects[space.sellerId])) {
+        return cloneObjekte(INITIAL_DATA.verkauf_objects[space.sellerId]);
+      }
       return space.defaults.map(name => ({ id: cryptoId(), name, links: {} }));
+    }
+    function cloneObjekte(arr) {
+      return arr.map(o => ({
+        id: o.id || cryptoId(),
+        name: o.name || '',
+        links: Object.assign({}, o.links || {})
+      }));
     }
     function saveObjekte(space) {
       localStorage.setItem(space.storageKey, JSON.stringify(space.objekte));
@@ -1167,6 +1210,13 @@
           if (Array.isArray(parsed)) saved = parsed;
         }
       } catch (e) {}
+      if (!saved.length) {
+        if (orderKey === 'immokanzlei.steps.vermietung.order' && Array.isArray(INITIAL_DATA.steps_vermietung_order)) {
+          saved = INITIAL_DATA.steps_vermietung_order.slice();
+        } else if (orderKey === 'immokanzlei.steps.verkauf.order' && Array.isArray(INITIAL_DATA.steps_verkauf_order)) {
+          saved = INITIAL_DATA.steps_verkauf_order.slice();
+        }
+      }
       const byId = new Map(steps.map(s => [s.id, s]));
       const ordered = [];
       const seen = new Set();
@@ -1504,6 +1554,57 @@
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && state.movePopoverFor) closeMovePopover();
+    });
+
+    /* ---------- EXPORT ---------- */
+    function buildExport() {
+      const out = {
+        vermietung_objekte: null,
+        verkauf_sellers: null,
+        verkauf_objects: {},
+        steps_vermietung_order: null,
+        steps_verkauf_order: null
+      };
+      try { out.vermietung_objekte = JSON.parse(localStorage.getItem('immokanzlei.objekte.v1') || 'null'); } catch (e) {}
+      try { out.verkauf_sellers = JSON.parse(localStorage.getItem(SELLERS_KEY) || 'null'); } catch (e) {}
+      try { out.steps_vermietung_order = JSON.parse(localStorage.getItem('immokanzlei.steps.vermietung.order') || 'null'); } catch (e) {}
+      try { out.steps_verkauf_order = JSON.parse(localStorage.getItem('immokanzlei.steps.verkauf.order') || 'null'); } catch (e) {}
+      verkaufSellers.forEach(s => {
+        try {
+          const v = JSON.parse(localStorage.getItem(sellerStorageKey(s.id)) || 'null');
+          if (v) out.verkauf_objects[s.id] = v;
+        } catch (e) {}
+      });
+      return out;
+    }
+
+    const exportModal = document.getElementById('export-modal');
+    const exportTextarea = document.getElementById('export-textarea');
+    document.getElementById('open-export').addEventListener('click', e => {
+      e.preventDefault();
+      exportTextarea.value = JSON.stringify(buildExport(), null, 2);
+      exportModal.classList.add('show');
+      exportModal.setAttribute('aria-hidden', 'false');
+      setTimeout(() => { exportTextarea.focus(); exportTextarea.select(); }, 50);
+    });
+    function closeExport() {
+      exportModal.classList.remove('show');
+      exportModal.setAttribute('aria-hidden', 'true');
+    }
+    document.getElementById('export-modal-close').addEventListener('click', closeExport);
+    document.getElementById('export-close').addEventListener('click', closeExport);
+    exportModal.addEventListener('click', e => { if (e.target === exportModal) closeExport(); });
+    document.getElementById('export-copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(exportTextarea.value);
+      } catch (err) {
+        exportTextarea.select();
+        try { document.execCommand('copy'); } catch (e) {}
+      }
+      showToast('In Zwischenablage kopiert');
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && exportModal.classList.contains('show')) closeExport();
     });
 
     /* ---------- INIT ---------- */
