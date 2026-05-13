@@ -740,11 +740,20 @@
   (function () {
     'use strict';
 
+    const APPLIED_VERSION_KEY = 'immokanzlei.initial_data_version';
+
     // Geteilte Anfangsdaten — werden geladen, wenn ein Browser noch keine
-    // eigenen Daten in localStorage hat. Damit alle Nutzer dieselbe
-    // Ausgangsbasis sehen, kann der Inhalt dieser Konstante über die
-    // Export-Funktion exportiert und hier eingefügt werden.
+    // eigenen Daten in localStorage hat ODER wenn die Version unten höher
+    // ist als die zuletzt angewendete. Damit alle Nutzer dieselbe
+    // Ausgangsbasis sehen, kann der Inhalt über die Export-Funktion
+    // exportiert und hier eingefügt werden.
+    //
+    // WICHTIG: Bei jeder Aktualisierung der Daten unten die "version" um 1
+    // erhöhen — dadurch werden auch alle bestehenden Browser beim nächsten
+    // Öffnen auf den neuen Stand gesetzt (lokale Bearbeitungen gehen dann
+    // verloren — Änderungen werden also zentral hier gepflegt).
     const INITIAL_DATA = {
+      "version": 2,
       "vermietung_objekte": [
         {
           "id": "o_u1qwn57ymp144ssf",
@@ -884,6 +893,36 @@
       "steps_vermietung_order": null,
       "steps_verkauf_order": null
     };
+
+    function applyInitialDataIfNeeded() {
+      const current = Number(INITIAL_DATA.version || 0);
+      const appliedRaw = localStorage.getItem(APPLIED_VERSION_KEY);
+      const applied = appliedRaw ? Number(appliedRaw) : 0;
+      if (!(current > applied)) return;
+
+      if (Array.isArray(INITIAL_DATA.vermietung_objekte)) {
+        localStorage.setItem('immokanzlei.objekte.v1', JSON.stringify(INITIAL_DATA.vermietung_objekte));
+      }
+      if (Array.isArray(INITIAL_DATA.verkauf_sellers)) {
+        localStorage.setItem('verkauf_sellers', JSON.stringify(INITIAL_DATA.verkauf_sellers));
+      }
+      if (INITIAL_DATA.verkauf_objects && typeof INITIAL_DATA.verkauf_objects === 'object') {
+        Object.keys(INITIAL_DATA.verkauf_objects).forEach(sellerId => {
+          const list = INITIAL_DATA.verkauf_objects[sellerId];
+          if (Array.isArray(list)) {
+            localStorage.setItem('verkauf_objects_' + sellerId, JSON.stringify(list));
+          }
+        });
+      }
+      if (Array.isArray(INITIAL_DATA.steps_vermietung_order)) {
+        localStorage.setItem('immokanzlei.steps.vermietung.order', JSON.stringify(INITIAL_DATA.steps_vermietung_order));
+      }
+      if (Array.isArray(INITIAL_DATA.steps_verkauf_order)) {
+        localStorage.setItem('immokanzlei.steps.verkauf.order', JSON.stringify(INITIAL_DATA.steps_verkauf_order));
+      }
+      localStorage.setItem(APPLIED_VERSION_KEY, String(current));
+    }
+    applyInitialDataIfNeeded();
 
     const LINK_FIELDS = [
       { key: 'gform1', label: 'Google Formular 1' },
